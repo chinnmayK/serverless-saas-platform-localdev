@@ -1,0 +1,13 @@
+{
+  "name": "saas-platform-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:api": "bash scripts/test-saas.sh",
+    "test:rls": "node scripts/verify-rls.js"
+  },
+  "dependencies": {
+    "@saas/shared": "file:./shared",
+    "pg": "^8.11.3"
+  }
+}
