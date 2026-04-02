@@ -1,3 +1,4 @@
+require('./tracing');
 const express = require("express");
 const tenantRoutes = require("./routes");
 const logger = require("@saas/shared/utils/logger");
@@ -10,7 +11,6 @@ const usage = require("@saas/shared/middleware/usageMiddleware");
 
 app.use(express.json());
 app.use(requestLogger);
-app.use(usage); // Global usage tracking
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "tenant-service", uptime: process.uptime() });

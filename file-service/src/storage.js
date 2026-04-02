@@ -1,23 +1,12 @@
-const Minio = require("minio");
+const { MinioClient: client } = require("@saas/shared/utils");
 
-const BUCKET = process.env.MINIO_BUCKET || "saas-files";
+const bucket = process.env.MINIO_BUCKET;
 
-const client = new Minio.Client({
-  endPoint: process.env.MINIO_ENDPOINT || "localhost",
-  port: parseInt(process.env.MINIO_PORT || "9000"),
-  useSSL: process.env.MINIO_USE_SSL === "true",
-  accessKey: process.env.MINIO_ACCESS_KEY || "minioadmin",
-  secretKey: process.env.MINIO_SECRET_KEY || "minioadmin123",
-});
-
-/**
- * Ensure the bucket exists. Called on service startup.
- */
-async function ensureBucket() {
-  const exists = await client.bucketExists(BUCKET);
+async function initBucket() {
+  const exists = await client.bucketExists(bucket).catch(() => false);
   if (!exists) {
-    await client.makeBucket(BUCKET, "us-east-1");
-    console.log(`[file-service] Created MinIO bucket: ${BUCKET}`);
+    await client.makeBucket(bucket);
+    console.log('✅ Bucket created:', bucket);
   }
 }
 
@@ -34,24 +23,24 @@ function buildKey(tenantId, userId, filename) {
  */
 async function uploadFile({ tenantId, userId, filename, buffer, mimetype }) {
   const key = buildKey(tenantId, userId, filename);
-  await client.putObject(BUCKET, key, buffer, buffer.length, {
+  await client.putObject(bucket, key, buffer, buffer.length, {
     "Content-Type": mimetype,
   });
-  return { key, bucket: BUCKET };
+  return { key, bucket: bucket };
 }
 
 /**
  * Get a temporary pre-signed download URL (valid 1 hour).
  */
 async function getDownloadUrl(key) {
-  return client.presignedGetObject(BUCKET, key, 60 * 60);
+  return client.presignedGetObject(bucket, key, 60 * 60);
 }
 
 /**
  * Delete a file from MinIO.
  */
 async function deleteFile(key) {
-  await client.removeObject(BUCKET, key);
+  await client.removeObject(bucket, key);
 }
 
 /**
@@ -64,4 +53,4 @@ function assertKeyBelongsToTenant(key, tenantId) {
   }
 }
 
-module.exports = { ensureBucket, uploadFile, getDownloadUrl, deleteFile, assertKeyBelongsToTenant };
+module.exports = { client, bucket, initBucket, uploadFile, getDownloadUrl, deleteFile, assertKeyBelongsToTenant };

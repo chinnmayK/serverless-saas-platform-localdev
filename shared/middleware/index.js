@@ -5,5 +5,6 @@ module.exports = {
   rbacMiddleware: require("./rbacMiddleware"),
   requestLogger: require("./requestLogger"),
   idempotencyMiddleware: require("./idempotencyMiddleware"),
-  serviceAuthMiddleware: require("./serviceAuthMiddleware")
+  serviceAuthMiddleware: require("./serviceAuthMiddleware"),
+  onboardingGuard: require("./onboardingGuard").onboardingGuard
 }

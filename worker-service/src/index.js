@@ -1,9 +1,16 @@
+require('./tracing');
 const cron = require("node-cron");
 const { aggregateUsage }   = require("./jobs/aggregateUsage");
 const { generateInvoices } = require("./jobs/generateInvoices");
+const { processUsage }      = require("./jobs/processUsage");
 const logger = require("@saas/shared/utils/logger");
 
 logger.info("Worker service started");
+
+// 🔥 STARTS BACKGROUND CONSUMER (NON-BLOCKING)
+processUsage().catch(err => {
+  logger.error("Usage consumer failed", { error: err.message });
+});
 
 // Every hour — aggregate usage metrics
 cron.schedule("0 * * * *", async () => {

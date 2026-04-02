@@ -12,9 +12,11 @@ const pool = new Pool({
   database: process.env.DB_NAME     || "saas_db",
   user:     process.env.DB_USER     || "app_user",
   password: process.env.DB_PASSWORD || "app_password",
-  max: 20,
+  // 🔥 FINAL POOL TUNING
+  max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
+  statement_timeout: 3000, // 🛡️ Protect pool from long-hanging queries
 });
 
 // ─── Auth pool — auth_user, bypasses RLS, used ONLY for login ─────────────────
@@ -24,9 +26,9 @@ const authPool = new Pool({
   database: process.env.DB_NAME          || "saas_db",
   user:     process.env.AUTH_DB_USER     || "auth_user",
   password: process.env.AUTH_DB_PASSWORD || "auth_password",
-  max: 5,
+  max: 1, // 🔥 Reverted to 1
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
 });
 
 pool.on("error",     (err) => logger.error("Pool error",      { error: err.message }));
@@ -100,11 +102,19 @@ async function tenantQuery(tenantId, text, params) {
   }
 }
 
+/**
+ * Returns the primary database pool.
+ */
+function getPool() {
+  return pool;
+}
+
 module.exports = { 
   query, 
   authQuery, 
   withTenant, 
   tenantQuery, 
   tenantContext, 
-  pool 
+  pool,
+  getPool
 };

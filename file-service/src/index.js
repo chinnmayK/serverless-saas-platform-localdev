@@ -1,6 +1,7 @@
+require('./tracing');
 const express = require("express");
 const routes = require("./routes");
-const { ensureBucket } = require("./storage");
+const { initBucket } = require("./storage");
 const logger = require("@saas/shared/utils/logger");
 const requestLogger = require("@saas/shared/middleware/requestLogger");
 
@@ -11,7 +12,6 @@ const usage = require("@saas/shared/middleware/usageMiddleware");
 
 app.use(express.json());
 app.use(requestLogger);
-app.use(usage);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "file-service", uptime: process.uptime() });
@@ -40,7 +40,7 @@ async function start() {
   let retries = 10;
   while (retries--) {
     try {
-      await ensureBucket();
+      await initBucket();
       break;
     } catch (err) {
       console.warn(`[file-service] MinIO not ready yet, retrying... (${retries} left)`);

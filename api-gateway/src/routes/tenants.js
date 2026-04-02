@@ -1,15 +1,12 @@
 const express = require('express');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 const router = express.Router();
+const { streamProxy } = require('@saas/shared/utils/streamProxy');
 
-router.use(
-  '/',
-  createProxyMiddleware({
-    target: process.env.TENANT_SERVICE_URL || 'http://tenant-service:3001',
-    changeOrigin: true,
-    pathRewrite: (path) => '/tenants' + path,
-    on: { error: (err, req, res) => res.status(502).json({ error: 'Tenant service unavailable' }) },
-  })
-);
+// POST /api/onboarding — public endpoint, no auth
+router.post('/onboarding', (req, res) => {
+  const tenantServiceUrl = process.env.TENANT_SERVICE_URL || 'http://localhost:3001';
+  const targetUrl = `${tenantServiceUrl}/onboard`;
+  streamProxy(req, res, targetUrl);
+});
 
 module.exports = router;

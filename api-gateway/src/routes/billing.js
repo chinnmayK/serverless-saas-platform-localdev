@@ -2,6 +2,8 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const axios = require('axios');
 const { getBreaker } = require('../../../shared/utils/circuitBreaker');
+const { serviceClient } = require('@saas/shared/utils');
+const { authMiddleware } = require('@saas/shared/middleware');
 const router = express.Router();
 
 const billingBreaker = getBreaker('billing-service', { threshold: 3, timeout: 15000 });
@@ -20,6 +22,27 @@ router.get('/usage', async (req, res) => {
       fallback: true,
     });
   }
+});
+
+router.post('/create-checkout', authMiddleware, async (req, res) => {
+  const data = await serviceClient.post('http://billing-service:3003/billing/create-checkout', req.body, req.headers);
+  res.json(data);
+});
+
+router.post('/portal', authMiddleware, async (req, res) => {
+  const data = await serviceClient.post('http://billing-service:3003/billing/portal', {}, req.headers);
+  res.json(data);
+});
+
+// Webhook — no auth, forward raw body
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const response = await fetch('http://billing-service:3003/billing/webhook', {
+    method: 'POST',
+    headers: { ...req.headers, host: 'billing-service:3003' },
+    body: req.body,
+  });
+  const data = await response.json();
+  res.status(response.status).json(data);
 });
 
 // Proxy everything else

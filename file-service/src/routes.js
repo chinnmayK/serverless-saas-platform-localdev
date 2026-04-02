@@ -9,7 +9,6 @@ const storage = require("./storage");
 const { assertKeyBelongsToTenant } = storage;
 const upload = require("./upload");
 const logger = require("@saas/shared/utils/logger");
-const trackUsage = require("@saas/shared/middleware/usageMiddleware");
 const { getServiceBreaker } = require("@saas/shared/utils/serviceClient");
 const billingBreaker = getServiceBreaker("billing-service", process.env.BILLING_SERVICE_URL);
 
@@ -17,7 +16,7 @@ const billingBreaker = getServiceBreaker("billing-service", process.env.BILLING_
 router.use(auth, tenantCtx);
 
 // POST /files/upload — upload a file (tenant-scoped)
-router.post("/upload", upload.single("file"), trackUsage, async (req, res) => {
+router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return response.badRequest(res, "No file provided (field name: file)");
 
@@ -40,7 +39,7 @@ router.post("/upload", upload.single("file"), trackUsage, async (req, res) => {
     );
 
     // Audit log file upload
-    logger.audit("file.uploaded", {
+    logger.info("file.uploaded", {
       tenantId: req.tenantId,
       userId: req.userId,
       fileId: result.rows[0].file_id,
@@ -55,7 +54,7 @@ router.post("/upload", upload.single("file"), trackUsage, async (req, res) => {
 });
 
 // GET /files — list all files for this tenant
-router.get("/", trackUsage, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const result = await db.tenantQuery(
       req.tenantId,
@@ -72,7 +71,7 @@ router.get("/", trackUsage, async (req, res) => {
 });
 
 // GET /files/:id/download — get pre-signed download URL
-router.get("/:id/download", trackUsage, async (req, res) => {
+router.get("/:id/download", async (req, res) => {
   try {
     // Ensure file belongs to caller's tenant and is not deleted
     const result = await db.tenantQuery(
@@ -115,6 +114,40 @@ router.delete("/:id", auth, tenantCtx, requireRole("admin", "member"), async (re
     );
 
     return response.success(res, { deleted: true, fileId: req.params.id });
+  } catch (err) {
+    return response.error(res, err.message);
+  }
+});
+
+// GET /dashboard/files — summary for tenant dashboard
+router.get("/dashboard/files", async (req, res) => {
+  try {
+    const tenantId = req.tenantId;
+
+    const [stats, recent] = await Promise.all([
+      db.tenantQuery(
+        tenantId,
+        `SELECT COUNT(*) as total_files, COALESCE(SUM(size_bytes), 0) as total_size 
+         FROM files 
+         WHERE tenant_id = $1 AND deleted_at IS NULL`,
+        [tenantId]
+      ),
+      db.tenantQuery(
+        tenantId,
+        `SELECT file_id, original_name, size_bytes, created_at 
+         FROM files 
+         WHERE tenant_id = $1 AND deleted_at IS NULL 
+         ORDER BY created_at DESC 
+         LIMIT 5`,
+        [tenantId]
+      ),
+    ]);
+
+    return response.success(res, {
+      total_files: parseInt(stats.rows[0].total_files, 10),
+      total_size: parseInt(stats.rows[0].total_size, 10),
+      recent_files: recent.rows,
+    });
   } catch (err) {
     return response.error(res, err.message);
   }

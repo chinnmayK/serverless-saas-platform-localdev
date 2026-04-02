@@ -49,12 +49,14 @@ async function getUsersByTenant(tenantId) {
 }
 
 async function getUserById(userId, tenantId) {
+  const logger = require("@saas/shared/utils/logger");
+  logger.info("repository.getUserById", { userId, tenantId });
   const result = await db.tenantQuery(
     tenantId,
     `SELECT user_id, tenant_id, email, role, created_at
      FROM users
-     WHERE user_id = $1`,
-    [userId]
+     WHERE user_id = $1 AND tenant_id = $2`,
+    [userId, tenantId]
   );
   return result.rows[0] || null;
 }
@@ -62,8 +64,10 @@ async function getUserById(userId, tenantId) {
 async function deleteUser(userId, tenantId) {
   const result = await db.withTenant(tenantId, async (client) => {
     return client.query(
-      `DELETE FROM users WHERE user_id = $1 RETURNING *`,
-      [userId]
+      `DELETE FROM users 
+       WHERE user_id = $1 AND tenant_id = $2 
+       RETURNING user_id, email, role`,
+      [userId, tenantId]
     );
   });
   return result.rows[0] || null;

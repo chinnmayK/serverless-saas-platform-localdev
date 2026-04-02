@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
   const key = req.headers['idempotency-key'];
   if (!key) return next();
 
-  logger.info('Idempotency Check', { key });
+  // logger.debug('Idempotency Check', { key });
 
   try {
     const existing = await db.query(
@@ -21,13 +21,13 @@ module.exports = async (req, res, next) => {
     );
 
     if (existing.rows.length > 0) {
-      logger.info('Idempotency HIT', { key });
+      // logger.debug('Idempotency HIT', { key });
       return res
         .status(existing.rows[0].status_code)
         .json(existing.rows[0].response);
     }
 
-    logger.info('Idempotency MISS', { key });
+    // logger.debug('Idempotency MISS', { key });
 
     const originalJson = res.json;
 

@@ -1,42 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
+const { streamProxy } = require('@saas/shared/utils/streamProxy');
+const billingRoutes = require('./billing');
 
 // 🔥 SERVICE URLs (Docker service names)
 const SERVICES = {
-  tenant: 'http://saas_tenant_service:3001',
-  user: 'http://saas_user_service:3002',
-  billing: 'http://saas_billing_service:3003',
-  file: 'http://saas_file_service:3004',
+  tenant: process.env.TENANT_SERVICE_URL || 'http://localhost:3001',
+  user: process.env.USER_SERVICE_URL || 'http://localhost:3002',
+  billing: process.env.BILLING_SERVICE_URL || 'http://localhost:3003',
+  file: process.env.FILE_SERVICE_URL || 'http://localhost:3004',
 };
 
-// 🔥 GENERIC PROXY FUNCTION
-async function proxyRequest(req, res, target) {
-  try {
-    // Use baseUrl + path to reconstruct the full path from the mounted router
-    // baseUrl will be /api/tenants or /api/users, etc.
-    // path will be / for top-level or /auth/register for nested
-    const fullPath = req.baseUrl.replace('/api', '') + req.path;
-    
-    const response = await axios({
-      method: req.method,
-      url: `${target}${fullPath}`,
-      headers: {
-        ...req.headers,
-      },
-      data: req.body,
-    });
-
-    res.status(response.status).json(response.data);
-  } catch (err) {
-    console.error('Proxy Error:', err.message);
-
-    if (err.response) {
-      return res.status(err.response.status).json(err.response.data);
-    }
-
-    res.status(500).json({ error: 'Gateway Error' });
-  }
+// 🔥 GENERIC PROXY FUNCTION (STREAMING)
+function proxyRequest(req, res, target) {
+  const fullPath = (req.baseUrl || '').replace('/api', '') + req.path;
+  const url = `${target}${fullPath}`;
+  streamProxy(req, res, url);
 }
 
 // 🔥 ROUTES
@@ -54,12 +33,7 @@ router.use('/auth', (req, res) =>
   proxyRequest(req, res, SERVICES.user)
 );
 
-router.use('/billing', (req, res) =>
-  proxyRequest(req, res, SERVICES.billing)
-);
+router.use('/billing', billingRoutes);
 
-router.use('/files', (req, res) =>
-  proxyRequest(req, res, SERVICES.file)
-);
 
 module.exports = router;

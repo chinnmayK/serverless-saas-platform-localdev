@@ -1,74 +1,119 @@
-const db = require("@saas/shared/utils/db");
-const { getUsageSummary } = require("./usageMeter");
-
-// Simulated pricing per API call per plan
-const PRICING = {
-  free: { pricePerCall: 0, includedCalls: 1000, overagePer1k: 0 },
-  pro: { pricePerCall: 0, includedCalls: 10000, overagePer1k: 0.5 },
-  enterprise: { pricePerCall: 0, includedCalls: 100000, overagePer1k: 0.1 },
-};
-
-const BASE_PRICE = { free: 0, pro: 49, enterprise: 299 };
+const stripe = require('./stripeClient');
+const { getPool } = require('@saas/shared/utils/db');
 
 /**
- * Generate a simulated invoice for a tenant for the current month.
+ * Create or retrieve a Stripe customer for a tenant.
  */
-async function generateInvoice(tenantId) {
-  // Get tenant plan
-  const tenantResult = await db.query(
-    `SELECT plan FROM tenants WHERE tenant_id = $1`,
+async function ensureStripeCustomer(tenantId, email, name) {
+  const pool = getPool();
+  const { rows } = await pool.query(
+    'SELECT stripe_customer_id FROM tenants WHERE id = $1',
     [tenantId]
   );
-  if (!tenantResult.rows[0]) throw new Error("Tenant not found");
+  if (!rows.length) throw new Error('Tenant not found');
 
-  const plan = tenantResult.rows[0].plan;
+  if (rows[0].stripe_customer_id) return rows[0].stripe_customer_id;
 
-  // Date range: current month
-  const now = new Date();
-  const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const to = now.toISOString();
+  const customer = await stripe.customers.create({ email, name, metadata: { tenantId } });
 
-  const usage = await getUsageSummary(tenantId, from, to);
-
-  const pricing = PRICING[plan] || PRICING.free;
-  const basePrice = BASE_PRICE[plan] || 0;
-
-  const overageCalls = Math.max(0, usage.total - pricing.includedCalls);
-  const overageCharge = ((overageCalls / 1000) * pricing.overagePer1k).toFixed(2);
-  const totalAmount = (basePrice + parseFloat(overageCharge)).toFixed(2);
-
-  return {
-    tenantId,
-    plan,
-    period: { from, to },
-    usage: {
-      total: usage.total,
-      included: pricing.includedCalls,
-      overage: overageCalls,
-    },
-    charges: {
-      base: basePrice,
-      overage: parseFloat(overageCharge),
-      total: parseFloat(totalAmount),
-      currency: "USD",
-    },
-    breakdown: usage.breakdown,
-    generatedAt: new Date().toISOString(),
-  };
+  await pool.query(
+    'UPDATE tenants SET stripe_customer_id = $1 WHERE id = $2',
+    [customer.id, tenantId]
+  );
+  return customer.id;
 }
 
 /**
- * Get subscription info for a tenant.
+ * Create a Stripe Checkout session for the Pro plan.
  */
-async function getSubscription(tenantId) {
-  const result = await db.tenantQuery(
-    tenantId,
-    `SELECT s.*, t.name AS tenant_name, t.plan
-     FROM subscriptions s
-     JOIN tenants t ON s.tenant_id = t.tenant_id`,
-    []
+async function createCheckoutSession(tenantId, email, name) {
+  const pool = getPool();
+  const customerId = await ensureStripeCustomer(tenantId, email, name);
+
+  const { rows: planRows } = await pool.query(
+    "SELECT stripe_price_id FROM plans WHERE id = 'pro'"
   );
-  return result.rows[0] || null;
+  if (!planRows[0]?.stripe_price_id) throw new Error('Pro plan price not configured');
+
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    line_items: [{ price: planRows[0].stripe_price_id, quantity: 1 }],
+    success_url: `${process.env.FRONTEND_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url:  `${process.env.FRONTEND_URL}/billing/cancel`,
+    metadata: { tenantId },
+  });
+  return session.url;
 }
 
-module.exports = { generateInvoice, getSubscription };
+/**
+ * Create a Stripe Customer Portal session (manage/cancel subscription).
+ */
+async function createPortalSession(tenantId) {
+  const pool = getPool();
+  const { rows } = await pool.query(
+    'SELECT stripe_customer_id FROM tenants WHERE id = $1',
+    [tenantId]
+  );
+  if (!rows[0]?.stripe_customer_id) throw new Error('No Stripe customer found');
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: rows[0].stripe_customer_id,
+    return_url: `${process.env.FRONTEND_URL}/dashboard`,
+  });
+  return session.url;
+}
+
+/**
+ * Handle Stripe webhook events — keep this idempotent.
+ */
+async function handleWebhook(rawBody, signature) {
+  const event = stripe.webhooks.constructEvent(
+    rawBody,
+    signature,
+    process.env.STRIPE_WEBHOOK_SECRET
+  );
+
+  const pool = getPool();
+
+  switch (event.type) {
+    case 'invoice.paid': {
+      const sub = event.data.object;
+      await pool.query(
+        `UPDATE tenants
+            SET plan = 'pro', plan_status = 'active',
+                stripe_subscription_id = $1
+          WHERE stripe_customer_id = $2`,
+        [sub.subscription, sub.customer]
+      );
+      break;
+    }
+    case 'customer.subscription.updated': {
+      const sub = event.data.object;
+      const plan = sub.status === 'active' ? 'pro' : 'free';
+      await pool.query(
+        `UPDATE tenants
+            SET plan = $1, plan_status = $2
+          WHERE stripe_customer_id = $3`,
+        [plan, sub.status, sub.customer]
+      );
+      break;
+    }
+    case 'customer.subscription.deleted': {
+      const sub = event.data.object;
+      await pool.query(
+        `UPDATE tenants
+            SET plan = 'free', plan_status = 'canceled',
+                stripe_subscription_id = NULL
+          WHERE stripe_customer_id = $1`,
+        [sub.customer]
+      );
+      break;
+    }
+  }
+  return { received: true };
+}
+
+module.exports = { ensureStripeCustomer, createCheckoutSession, createPortalSession, handleWebhook };
+

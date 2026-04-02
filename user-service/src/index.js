@@ -1,40 +1,24 @@
-const express = require("express");
-const routes = require("./routes");
-const logger = require("@saas/shared/utils/logger");
-const requestLogger = require("@saas/shared/middleware/requestLogger");
+const cluster = require('cluster');
+const os = require('os');
 
-const app = express();
-const PORT = process.env.PORT || 3002;
+if (cluster.isPrimary) {
+  // ✅ FIX: Limit workers to avoid connection pool saturation & resource contention
+  const numCPUs = Math.min(os.cpus().length, 4);
+  console.log(`[Primary ${process.pid}] for user-service is running. Forking ${numCPUs} workers...`);
 
-const usage = require("@saas/shared/middleware/usageMiddleware");
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
 
-app.use(express.json());
-app.use(requestLogger);
-app.use(usage);
-
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", service: "user-service", uptime: process.uptime() });
-});
-
-// Both /auth/* and /users/* are handled in one router
-app.use("/", routes);
-
-// Global error handler
-app.use((err, req, res, next) => {
-  logger.error("Unhandled error", {
-    message: err.message,
-    stack: err.stack,
-    path: req.path,
-    tenantId: req.tenantId || null,
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`[Worker ${worker.process.pid}] for user-service died. Forking a new worker...`);
+    cluster.fork();
   });
-  res.status(500).json({ success: false, error: "Internal server error" });
-});
-
-// Catch unhandled promise rejections
-process.on("unhandledRejection", (reason) => {
-  logger.error("Unhandled promise rejection", { reason: String(reason) });
-});
-
-app.listen(PORT, () => {
-  console.log(`[user-service] Running on port ${PORT}`);
-});
+} else {
+  const app = require('./server'); 
+  const PORT = process.env.PORT || 3002;
+  
+  app.listen(PORT, () => {
+    console.log(`[Worker ${process.pid}] [user-service] Running on port ${PORT}`);
+  });
+}

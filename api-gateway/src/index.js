@@ -1,87 +1,25 @@
-const express = require('express');
-const app = express();
+const cluster = require('cluster');
+const os = require('os');
+const path = require('path');
 
-// ✅ BODY PARSER FIRST
-app.use(express.json());
+if (cluster.isPrimary) {
+  const numCPUs = Math.min(os.cpus().length, 4); // Limit to 4 to avoid resource crunch
+  console.log(`[Primary ${process.pid}] is running. Forking ${numCPUs} workers...`);
 
-// ✅ IMPORTS
-const requestLogger = require('@saas/shared/middleware/requestLogger');
-const { authMiddleware, tenantMiddleware, usageMiddleware } = require('@saas/shared/middleware');
-const RedisRateLimiter = require('@saas/shared/utils/redisRateLimiter');
-
-const routes = require('./routes/internal');
-
-// ✅ PUBLIC ROUTES FIRST (NO AUTH)
-app.get('/health', (req, res) => res.send('OK'));
-
-// 🔥 LOGGER (must be early)
-app.use(requestLogger);
-
-// 🔥 RATE LIMITER
-const rateLimiter = new RedisRateLimiter({
-  windowMs: 60000,
-  maxRequests: 100
-});
-app.use(rateLimiter.middleware());
-
-// 🔥 CONDITIONAL AUTH
-app.use((req, res, next) => {
-  const publicRoutes = [
-    { method: 'POST', path: '/api/tenants' },
-    { method: 'POST', path: '/api/users/auth/register' },
-    { method: 'POST', path: '/api/users/auth/login' },
-    { method: 'POST', path: '/api/auth/register' },
-    { method: 'POST', path: '/api/auth/login' },
-  ];
-
-  const isPublic = publicRoutes.some(
-    (route) =>
-      route.method === req.method &&
-      req.originalUrl.startsWith(route.path)
-  );
-
-  if (isPublic) {
-    return next();
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
   }
 
-  return authMiddleware(req, res, next);
-});
-
-// 🔥 TENANT (skip for public routes)
-app.use((req, res, next) => {
-  const publicRoutes = [
-    { method: 'POST', path: '/api/tenants' },
-    { method: 'POST', path: '/api/users/auth/register' },
-    { method: 'POST', path: '/api/users/auth/login' },
-    { method: 'POST', path: '/api/auth/register' },
-    { method: 'POST', path: '/api/auth/login' },
-  ];
-
-  const isPublic = publicRoutes.some(
-    (route) =>
-      route.method === req.method &&
-      req.originalUrl.startsWith(route.path)
-  );
-
-  if (isPublic) {
-    return next();
-  }
-  return tenantMiddleware(req, res, next);
-});
-
-// 🔥 USAGE
-app.use(usageMiddleware);
-
-// 🔥 ROUTES
-app.use('/api', routes);
-
-// Standard Express app export
-module.exports = app;
-
-// Add listening logic if run directly
-if (require.main === module) {
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`[Worker ${worker.process.pid}] died. Forking a new worker...`);
+    cluster.fork();
+  });
+} else {
+  // Workers handle the server logic
+  const app = require('./server'); // This is the renamed server.js
   const PORT = process.env.PORT || 3000;
+  
   app.listen(PORT, () => {
-    console.log(`[api-gateway] Running on port ${PORT}`);
+    console.log(`[Worker ${process.pid}] [api-gateway] Running on port ${PORT}`);
   });
 }

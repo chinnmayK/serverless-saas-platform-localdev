@@ -10,14 +10,16 @@ backed by PostgreSQL, Redis, and MinIO.
 
 | Component       | Technology              | Purpose                        |
 |-----------------|-------------------------|-------------------------------|
-| API Gateway     | Express + http-proxy    | Single entry point, rate limit |
-| Tenant Service  | Express + PostgreSQL    | Tenant CRUD + feature flags    |
-| User Service    | Express + PostgreSQL    | Auth (JWT) + user management  |
-| Billing Service | Express + PostgreSQL    | Usage metering + invoices      |
+| API Gateway     | Express (Clustered)     | Multi-core entry point, Limits |
+| User Service    | Express (Clustered)     | Auth (JWT) + user management  |
+| Tenant Service  | Express                 | Tenant CRUD + feature flags    |
+| Billing Service | Express                 | Usage metering + invoices      |
 | File Service    | Express + MinIO         | Tenant-scoped file storage     |
-| Database        | PostgreSQL 15           | All persistent data            |
-| Cache / Limits  | Redis 7                 | Token-bucket rate limiting     |
-| Object Storage  | MinIO                   | Local S3-compatible storage    |
+| Database        | PostgreSQL 15           | Pool-tuned (max 10) + RLS      |
+| Cache / Limits  | Redis 7                 | Non-blocking Rate Limiting     |
+| Monitoring      | Prometheus + Grafana    | Metrics & Visualization        |
+| Tracing         | Jaeger                  | Distributed Request Tracing    |
+| Object Storage  | MinIO                   | local S3-compatible storage    |
 
 ---
 
@@ -124,10 +126,16 @@ docker compose up --build
 | Service         | URL                        |
 |-----------------|----------------------------|
 | API Gateway     | http://localhost:3000       |
+| Grafana         | http://localhost:3005       |
+| Prometheus      | http://localhost:9090       |
+| Jaeger UI       | http://localhost:16686      |
 | MinIO Console   | http://localhost:9001       |
-| PostgreSQL      | localhost:5432 (via psql)  |
+| PostgreSQL      | localhost:5432 (psql)      |
 
-MinIO login: `minioadmin` / `minioadmin123`
+**Default Credentials**:
+- **Grafana**: `admin` / `admin`
+- **MinIO**: `minio` / `minio123`
+- **Postgres**: `app_user` / `app_password`
 
 ---
 
@@ -519,4 +527,53 @@ MINIO_ENDPOINT=minio
 
 ---
 
-*Last Documentation Sync: March 25, 2026*
+---
+
+## Performance & Load Resilience
+
+The platform is engineered for high-concurrency (500+ VUs) via several architectural optimizations:
+
+### 1. Node.js Clustering
+Services (Gateway, User) run in **Clustered Mode**, utilizing 4 workers per replica to scale across multiple CPU cores.
+
+### 2. Non-Blocking Rate Limiting
+The `redisRateLimiter.js` uses a **Background Quota Fetch** pattern. Requests are never blocked by database latency; quotas are refreshed asynchronously while allowing traffic based on safe defaults.
+
+### 3. Database Pool Tuning
+PostgreSQL pools are tuned for clustered environments:
+- `max`: 10 connections per worker
+- `statement_timeout`: 3000ms (prevents starvation)
+- `connectionTimeout`: 2000ms
+
+### 4. Service Level Objectives (SLOs)
+Verified via the `load-tests/` k6 suite:
+- **Baseline (50 VUs)**: p95 < 200ms
+- **Under Load (200 VUs)**: p95 < 500ms
+- **Spike (500 VUs)**: 0% real errors (5xx), p95 < 1000ms
+
+---
+
+## Observability
+
+### Metrics (Prometheus)
+Scrapes `/metrics` from the API Gateway. Tracks request rates, error codes, and **Redis latency**.
+
+### Tracing (Jaeger)
+Distributed tracing is enabled across the gateway and downstream services. Trace context is propagated via `traceparent` headers.
+
+### Dashboards (Grafana)
+Pre-configured for real-time monitoring of RPS, Latency, and Error rates.
+
+---
+
+## Testing & Verification
+
+### Unified Test Runner
+```bash
+bash scripts/test-all.sh
+```
+Executes Stage 1-7 (Integration) and Stage 8 (Sequential k6 Load Tests).
+
+---
+
+*Last Updated: April 1, 2026 17:40 UTC*

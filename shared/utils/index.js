@@ -6,5 +6,6 @@ module.exports = {
   retry: require("./retry"),
   serviceClient: require("./serviceClient"),
   circuitRegistry: require("./circuitRegistry"),
-  redisRateLimiter: require("./redisRateLimiter")
+  redisRateLimiter: require("./redisRateLimiter"),
+  MinioClient: require("./minio")
 }

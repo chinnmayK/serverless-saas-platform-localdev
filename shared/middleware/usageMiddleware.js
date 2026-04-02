@@ -1,31 +1,42 @@
-const db = require('../utils/db');
+const { getRedisClient } = require('../utils/redis');
 const logger = require('../utils/logger');
 
-module.exports = (req, res, next) => {
-  // 🔥 DO NOT BLOCK REQUEST
-  setImmediate(async () => {
-    try {
-      if (!req.user?.tenantId) return;
+let tenantRequestsTotal;
+try {
+  tenantRequestsTotal = require('../../api-gateway/src/metrics').tenantRequestsTotal;
+} catch (e) {
+  // Fallback
+  tenantRequestsTotal = { inc: () => {} };
+}
 
-      // ✅ CRITICAL FIX: Use tenantQuery() directly to explicitly set RLS context
-      // db.query() relies on AsyncLocalStorage which is lost in setImmediate()
-      // tenantQuery() explicitly sets the app.current_tenant_id before inserting
-      await db.tenantQuery(
-        req.user.tenantId,
-        `INSERT INTO usage_logs (tenant_id, endpoint, method)
-         VALUES ($1, $2, $3)`,
-        [
-          req.user.tenantId,
-          req.originalUrl,
-          req.method
-        ]
-      );
+module.exports = async (req, res, next) => {
+  try {
+    const tenantId = req.user?.tenantId || req.tenantId;
+    if (!tenantId) return next();
 
-      logger.info('Usage logged');
-    } catch (err) {
-      logger.error('Usage log failed', { error: err.message });
+    // ✅ Prometheus Metric (In-memory, fast)
+    if (tenantRequestsTotal) {
+      tenantRequestsTotal.inc({ tenant_id: tenantId });
     }
-  });
+
+    // 🔥 OFF-LOAD TO REDIS (ULTRA-LIGHTWEIGHT)
+    const usageData = {
+      tenantId,
+      userId: req.user?.user_id || 'anon',
+      endpoint: req.originalUrl,
+      method: req.method,
+      timestamp: new Date().toISOString()
+    };
+
+    const redis = await getRedisClient();
+    // Non-blocking push
+    redis.lPush('usage:queue', JSON.stringify(usageData)).catch(err => {
+      logger.error('Failed to push usage to Redis', { error: err.message });
+    });
+
+  } catch (err) {
+    // logger.error('Usage middleware error', { error: err.message });
+  }
 
   next(); // 🔥 ALWAYS continue immediately
 };

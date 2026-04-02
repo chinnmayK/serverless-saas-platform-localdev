@@ -4,3 +4,26 @@ node_modules/
 .DS_Store
 dist/
 coverage/
+
+# Test Results
+results/
+tests/results/
+
+# Binaries and large files
+*.exe
+load-tests/k6.exe
+*.zip
+*.tar.gz
+*.iso
+
+# IDE and Project Settings
+.vscode/
+.idea/
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+Thumbs.db
+Desktop.ini
