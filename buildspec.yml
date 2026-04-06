@@ -15,9 +15,9 @@ phases:
     commands:
       - echo "========== PRE-BUILD START =========="
 
-      - chmod +x scripts/detect-changes.sh
-      - ./scripts/detect-changes.sh || true
-      # FORCE BUILD & DEPLOY (IMPORTANT)
+      # - chmod +x scripts/detect-changes.sh
+      # - ./scripts/detect-changes.sh || true
+      # FORCE BUILD & DEPLOY (MANDATORY FOR CODEBUILD)
       - export RUN_BUILD=true
       - export RUN_DEPLOY=true
 

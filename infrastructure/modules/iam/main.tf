@@ -120,6 +120,23 @@ resource "aws_iam_role_policy_attachment" "codebuild_s3" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
+resource "aws_iam_role_policy" "codebuild_extra" {
+  role = aws_iam_role.codebuild_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:*"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 ########################################################
 # CODEPIPELINE ROLE
 ########################################################
