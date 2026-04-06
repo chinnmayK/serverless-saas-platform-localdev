@@ -1,8 +1,6 @@
 .
 |   .dockerignore
-|   .env
 |   .git
-|-- |   COMMIT_EDITMSG
 |-- |   config
 |-- |   description
 |-- |   HEAD
@@ -31,191 +29,20 @@
 |-- |-- |-- |-- |   main
 |-- |-- |-- |   remotes
 |-- |-- |-- |-- |   origin
-|-- |-- |-- |-- |-- |   main
+|-- |-- |-- |-- |-- |   HEAD
 |-- |   objects
-|-- |-- |   02
-|-- |-- |-- |   0dcb423924e2d13c05f798fd49144bf8f23c49
-|-- |-- |   03
-|-- |-- |-- |   5a68f34ac774a7bf1c9a831d8a949ad6a8f6c2
-|-- |-- |   05
-|-- |-- |-- |   ed1a76f77dacc733587169e25e392a0d1e672c
-|-- |-- |   08
-|-- |-- |-- |   700c3607c6b8aa37d0d2db5f2a5fefc64585bf
-|-- |-- |   0f
-|-- |-- |-- |   8a782e921fe24dbc0ef4ca49ab748667e06c11
-|-- |-- |   17
-|-- |-- |-- |   dd5ce5f6081aa4ec4d53561e8fcac1452242d6
-|-- |-- |   1d
-|-- |-- |-- |   603131447edfca54228142f5dc3a391ffe00ef
-|-- |-- |-- |   b817a2ceaac094dd8cedbec7740cac10fae1b5
-|-- |-- |   1e
-|-- |-- |-- |   8582eabc081b980ce1e87922ca260d7d740d08
-|-- |-- |   21
-|-- |-- |-- |   a0c0782c6df4cfb2d2063ad37400ea25f5b05d
-|-- |-- |   25
-|-- |-- |-- |   354c1ec3358f6924230f635b3409cc8cfabda6
-|-- |-- |-- |   9f1b8e81b5605824b493ecc57cb79cc991411a
-|-- |-- |   27
-|-- |-- |-- |   f2b07a79b4e16c3c65d3b5983d7ebd551868d6
-|-- |-- |   2d
-|-- |-- |-- |   b5589b2b3947455a8674fe58736c42601217a2
-|-- |-- |   2e
-|-- |-- |-- |   98549ad57a4d2b2863eee543a581b2f9384065
-|-- |-- |   2f
-|-- |-- |-- |   150dc6681c6bd66c4c179f783c8a6a9c34b540
-|-- |-- |   31
-|-- |-- |-- |   9877ad91db40ed4fe024f3557746a6d78392ef
-|-- |-- |   33
-|-- |-- |-- |   78ba9bbb9bf7426ceb57ff17af0495d1eb683e
-|-- |-- |   37
-|-- |-- |-- |   153c6e49d132a41b5255266e500911181e04e6
-|-- |-- |   3b
-|-- |-- |-- |   0a075a70824ab194d41fd4ad405deed5efd7f8
-|-- |-- |-- |   a46b3a8f4b36be7bc48167d59e0163575d82e4
-|-- |-- |   3e
-|-- |-- |-- |   0bba205c63fd70e4ff848ea61b1e7bb0abe930
-|-- |-- |   3f
-|-- |-- |-- |   38fada0347645dc40c0920421dacb729bf0dea
-|-- |-- |   43
-|-- |-- |-- |   2f3cd1775a7597a687081d06da265b0048ca25
-|-- |-- |   44
-|-- |-- |-- |   6baff6a422835380276598d6d4b2580f91e853
-|-- |-- |   45
-|-- |-- |-- |   0a988efae8eb2ebb5ca1692703de868e11013e
-|-- |-- |   48
-|-- |-- |-- |   891030c8cba8e4f9a8ef0f462de658e8458c42
-|-- |-- |-- |   8b9b67e94bbb6f0999c208120016f100d9a474
-|-- |-- |   4e
-|-- |-- |-- |   811669b8b83257e9bfc3965398a541f3a52dc2
-|-- |-- |   51
-|-- |-- |-- |   9e91b56e05b232b88427be6c9deaac918d41ab
-|-- |-- |-- |   f379ab86afa13a32a778589a28f5ad76d2aec3
-|-- |-- |   53
-|-- |-- |-- |   6b37e19fb9a29adb00e9f09003fbb7495edab5
-|-- |-- |   59
-|-- |-- |-- |   6f63828c4481052781dae4d3226ee145a41728
-|-- |-- |   5a
-|-- |-- |-- |   844ac8afb16fd76124e5ed1126a36704c04a73
-|-- |-- |   5b
-|-- |-- |-- |   35d393953d6e9ae5528af353d5c26c8216cbdc
-|-- |-- |   5d
-|-- |-- |-- |   59e35fe4a17ce39a5d435a59afb50201b3f81b
-|-- |-- |-- |   dad8dda56c5bd5d10a96c5daa7e77edef88424
-|-- |-- |   5f
-|-- |-- |-- |   dfb860c9427b7991fcb8d3997a2c6a731fa87f
-|-- |-- |   64
-|-- |-- |-- |   2691a06ea8c419c1aa9f2d0982fdbd8c07fc47
-|-- |-- |-- |   d451f07d26cfd72875ae67094e9395f5dfa5a8
-|-- |-- |   65
-|-- |-- |-- |   c861c71251259973a0bfbfd26738e73bf382ad
-|-- |-- |   68
-|-- |-- |-- |   f24e8660fde95755ce48f7c133c2bf4aa2affa
-|-- |-- |   6a
-|-- |-- |-- |   481c9a0bb79fdd38c00a2560acb5530ccbeda1
-|-- |-- |   6b
-|-- |-- |-- |   928c520a85696d55759c5af184f643a85a8dc3
-|-- |-- |   6d
-|-- |-- |-- |   b62f7706edb27e6fb23e1ef7ae1110de3d2599
-|-- |-- |   76
-|-- |-- |-- |   ae8c7c2e37c018cf3d44976f1482ce3f417697
-|-- |-- |   78
-|-- |-- |-- |   830abbeba3c9cb5124757db992980527681e4a
-|-- |-- |   7a
-|-- |-- |-- |   9699c7c8490ed9a32d3c47a8e0b9c76e93c778
-|-- |-- |   7d
-|-- |-- |-- |   c05c00d836a4cebcf26d59285a992adec239e6
-|-- |-- |   7e
-|-- |-- |-- |   eba6eb9247063677cf21f759d6e1ab21d9785b
-|-- |-- |   87
-|-- |-- |-- |   7e81510d661dfe0bca9bc69357172601bd41ee
-|-- |-- |   8a
-|-- |-- |-- |   f366c6d68bf54df5a879d68b157d8981864a48
-|-- |-- |   8d
-|-- |-- |-- |   687a3d95165b7b178a10d4b4502920a01ae0ae
-|-- |-- |   90
-|-- |-- |-- |   dcebc28c6edc043dda587d3543306a97958ac1
-|-- |-- |   92
-|-- |-- |-- |   a74001224d3e3b7bca8b0148cd13fed0f6b89f
-|-- |-- |   93
-|-- |-- |-- |   9e9c7db1a086d647798a5dbe0d343916cf016a
-|-- |-- |   96
-|-- |-- |-- |   102563a6b2d1eb78b817a733b48607dc9e3487
-|-- |-- |-- |   f2d1cf198a508f83a3792c36eac33aff7a8037
-|-- |-- |   99
-|-- |-- |-- |   75d4e00bb0482a1280f2298d0f6b1d45c6f6d9
-|-- |-- |   9a
-|-- |-- |-- |   c53f5caaee22a2f3ec9bf5a708cd03c08f79bb
-|-- |-- |   9d
-|-- |-- |-- |   bb67cc4593adb54ac3ae04ce08baa32f6425f7
-|-- |-- |   a2
-|-- |-- |-- |   87189f78f1f8e758aaf853b510838f7063f16a
-|-- |-- |   a5
-|-- |-- |-- |   83cbfc7944b70afcd87835a442a7c9eef03186
-|-- |-- |   a7
-|-- |-- |-- |   0a08fbf45b6032ba0cd8ba1cbbea928f51e921
-|-- |-- |   aa
-|-- |-- |-- |   3cc0a1097f422fa8c2ba455ac442a0f2c759af
-|-- |-- |   ac
-|-- |-- |-- |   4e8991a817181d25dd869659cabede87f76045
-|-- |-- |-- |   f06514bada5fc37357e11e18725d1f87a400db
-|-- |-- |   b1
-|-- |-- |-- |   643d0eaa217b88c2d61abf666416a87bfef932
-|-- |-- |   b4
-|-- |-- |-- |   489beb8c8b6cb18c04fc4485279f41a8f6e0c4
-|-- |-- |   b8
-|-- |-- |-- |   89b7bb2f569158dd37f50de50ae99871a7f55e
-|-- |-- |-- |   e3b94120c944c83978f6ff72ba8d1c9869e750
-|-- |-- |   ba
-|-- |-- |-- |   7a45efcf2ca8f708fc56b1727c16e85d7c4592
-|-- |-- |-- |   a1ccecfb85c6cdcf8a4cf2d09c6a67b2e36fb5
-|-- |-- |-- |   d046abd7df54344849da74d41baa30116e9804
-|-- |-- |   bb
-|-- |-- |-- |   83281a25faf89bba69ad1a8773a8b19b0f7cff
-|-- |-- |   c1
-|-- |-- |-- |   6114e27c43f4ec0edb3aeadb09abb4499bd402
-|-- |-- |   c3
-|-- |-- |-- |   5dc3a174a4e6fd18805a2f113f5312239e95ac
-|-- |-- |   c5
-|-- |-- |-- |   93c36f45efdf6b63e603c53dc4581bf1089357
-|-- |-- |   ca
-|-- |-- |-- |   f9a3967e6f8f07f0f8653bbe6c3f6fcf5fff65
-|-- |-- |   d0
-|-- |-- |-- |   f4b06748c8dbeab8d9ae6426409d712009008f
-|-- |-- |   d7
-|-- |-- |-- |   86904c6cd03ad576e53cb3a7202cccf1e999fc
-|-- |-- |   dd
-|-- |-- |-- |   af69c126c0a4bba651e628c543e48e832c0cc1
-|-- |-- |   df
-|-- |-- |-- |   ac6f3d6f98c1250df0097b7f54b8dfd0406cc5
-|-- |-- |-- |   eef9632446816ce77ee25e001496f2278e424f
-|-- |-- |   e2
-|-- |-- |-- |   3a1e78b9b014bac8e1e50cbfb3587fd982f631
-|-- |-- |-- |   87f9da6d9fbd070db854ee32b11f5942d11bfa
-|-- |-- |-- |   8f36231d9f0557c5c1ca72d303e587798aa444
-|-- |-- |-- |   ab18447b5534dbea0c7735073b398f0cee1cbc
-|-- |-- |-- |   c1fd6472ef7a6270b11ca92c9633352e5f762d
-|-- |-- |   eb
-|-- |-- |-- |   91ac5df0eb77babb6b39afa61b79a850bc2f81
-|-- |-- |   ee
-|-- |-- |-- |   d1204f22314342d3d43b278f5919350b653bfb
-|-- |-- |   ef
-|-- |-- |-- |   84e6fa1cd251f6a2bcd1cc91f230a5b712a30b
-|-- |-- |   f3
-|-- |-- |-- |   acec867422b8d18370c9011f2b1875b8946484
-|-- |-- |   f6
-|-- |-- |-- |   7cd4678c13599e861ac01e42e83b7f46401514
-|-- |-- |   fc
-|-- |-- |-- |   07e9a736a6da8a53682ea52d79e07037a3a39a
-|-- |-- |   fd
-|-- |-- |-- |   c5e3d82cf7805bc13ceea41a021cbf1002b61e
 |-- |-- |   info
 |-- |-- |   pack
+|-- |-- |-- |   pack-08955f4e417334b7b54104aa8a567c3f50d87e8a.idx
+|-- |-- |-- |   pack-08955f4e417334b7b54104aa8a567c3f50d87e8a.pack
+|-- |-- |-- |   pack-08955f4e417334b7b54104aa8a567c3f50d87e8a.rev
+|-- |   packed-refs
 |-- |   refs
 |-- |-- |   heads
 |-- |-- |-- |   main
 |-- |-- |   remotes
 |-- |-- |-- |   origin
-|-- |-- |-- |-- |   main
+|-- |-- |-- |-- |   HEAD
 |-- |-- |   tags
 |   .gitignore
 |   api-gateway
@@ -245,6 +72,7 @@
 |-- |-- |   stripeClient.js
 |-- |-- |   tracing.js
 |-- |-- |   usageMeter.js
+|   buildspec.yml
 |   context.md
 |   docker-compose.yml
 |   file-service
@@ -258,12 +86,60 @@
 |-- |-- |   tracing.js
 |-- |-- |   upload.js
 |   file_structure.txt
+|   infrastructure
+|-- |   .terraform
+|-- |-- |   modules
+|-- |-- |-- |   modules.json
+|-- |-- |   providers
+|-- |-- |-- |   registry.terraform.io
+|-- |-- |-- |-- |   hashicorp
+|-- |-- |-- |-- |-- |   aws
+|-- |-- |-- |-- |-- |-- |   5.100.0
+|-- |-- |-- |-- |-- |-- |-- |   windows_amd64
+|-- |-- |-- |-- |-- |-- |-- |-- |   LICENSE.txt
+|-- |-- |-- |-- |-- |-- |-- |-- |   terraform-provider-aws_v5.100.0_x5.exe
+|-- |-- |-- |-- |-- |   random
+|-- |-- |-- |-- |-- |-- |   3.8.1
+|-- |-- |-- |-- |-- |-- |-- |   windows_amd64
+|-- |-- |-- |-- |-- |-- |-- |-- |   LICENSE.txt
+|-- |-- |-- |-- |-- |-- |-- |-- |   terraform-provider-random_v3.8.1_x5.exe
+|-- |-- |   terraform.tfstate
+|-- |   .terraform.lock.hcl
+|-- |   main.tf
+|-- |   modules
+|-- |-- |   cicd
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   ecr
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   iam
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   messaging
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   network
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   secrets
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |   outputs.tf
+|-- |   providers.tf
+|-- |   terraform.tfvars
+|-- |   variables.tf
 |   init-db.sql
 |   load-tests
 |-- |   baseline.js
 |-- |   basic.js
 |-- |   chaos.js
-|-- |   k6.exe
 |-- |   mixed.js
 |-- |   smokeload.js
 |-- |   spike.js
@@ -273,16 +149,10 @@
 |   package-lock.json
 |   package.json
 |   README.md
-|   results
-|-- |   baseline.json
-|-- |   basic.json
-|-- |   breaking-point.json
-|-- |   long-duration.json
-|-- |   spike.json
 |   scripts
 |-- |   analyze-results.js
+|-- |   detect-changes.sh
 |-- |   get-token.sh
-|-- |   seed-stripe-prices.sh
 |-- |   test-all.sh
 |   shared
 |-- |   index.js

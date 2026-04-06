@@ -1,0 +1,86 @@
+version: 0.2
+
+env:
+  variables:
+    PROJECT_NAME: saas-platform
+    AWS_REGION: ap-south-1
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+
+  pre_build:
+    commands:
+      - echo "========== PRE-BUILD START =========="
+
+      - chmod +x scripts/detect-changes.sh
+      - ./scripts/detect-changes.sh
+      - export $(cat pipeline.env | xargs)
+
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - ECR_URL=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+      - echo "Logging in to ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login \
+        --username AWS \
+        --password-stdin $ECR_URL
+
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
+      - echo "========== PRE-BUILD COMPLETE =========="
+
+  build:
+    commands:
+      - echo "========== BUILD START =========="
+      - |
+        export $(cat pipeline.env | xargs)
+        if [ "$RUN_BUILD" = "true" ]; then
+          SERVICES=("api-gateway" "user-service" "tenant-service" "billing-service" "file-service")
+          for SERVICE in "${SERVICES[@]}"
+          do
+            echo "Building $SERVICE..."
+            docker build -t $PROJECT_NAME-$SERVICE:$IMAGE_TAG ./$SERVICE
+            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
+            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:latest
+          done
+        else
+          echo "Skipping build - no changes detected"
+        fi
+      - echo "========== BUILD COMPLETE =========="
+
+  post_build:
+    commands:
+      - |
+        export $(cat pipeline.env | xargs)
+        if [ "$RUN_BUILD" = "true" ]; then
+          echo "========== PUSH START =========="
+          SERVICES=("api-gateway" "user-service" "tenant-service" "billing-service" "file-service")
+          for SERVICE in "${SERVICES[@]}"
+          do
+            echo "Pushing $SERVICE..."
+            docker push $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
+            docker push $ECR_URL/$PROJECT_NAME-$SERVICE:latest
+          done
+          echo "========== PUSH COMPLETE =========="
+        fi
+
+      - |
+        export $(cat pipeline.env | xargs)
+        if [ "$RUN_DEPLOY" = "true" ]; then
+          echo "========== DEPLOY START =========="
+          SERVICES=("api-gateway" "user-service" "tenant-service" "billing-service" "file-service")
+          for SERVICE in "${SERVICES[@]}"
+          do
+            echo "Deploying $SERVICE..."
+            aws ecs update-service \
+              --cluster $PROJECT_NAME-cluster \
+              --service $PROJECT_NAME-$SERVICE \
+              --force-new-deployment
+          done
+          echo "========== DEPLOY COMPLETE =========="
+        fi
+
+artifacts:
+  files:
+    - '**/*'
