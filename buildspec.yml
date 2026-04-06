@@ -1,6 +1,7 @@
 version: 0.2
 
 env:
+  shell: bash
   variables:
     PROJECT_NAME: saas-platform
     AWS_REGION: ap-south-1
@@ -16,11 +17,9 @@ phases:
 
       - chmod +x scripts/detect-changes.sh
       - ./scripts/detect-changes.sh || true
-      - export $(cat pipeline.env | xargs) || true
-
-      # TEMP FORCE BUILD (IMPORTANT)
-      - RUN_BUILD=true
-      - RUN_DEPLOY=true
+      # FORCE BUILD & DEPLOY (IMPORTANT)
+      - export RUN_BUILD=true
+      - export RUN_DEPLOY=true
 
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - ECR_URL=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
@@ -36,10 +35,8 @@ phases:
     commands:
       - echo "========== BUILD START =========="
       - |
-        export $(cat pipeline.env | xargs)
         if [ "$RUN_BUILD" = "true" ]; then
-          SERVICES=("api-gateway" "user-service" "tenant-service" "billing-service" "file-service")
-          for SERVICE in "${SERVICES[@]}"
+          for SERVICE in api-gateway user-service tenant-service billing-service file-service
           do
             echo "Building $SERVICE..."
             docker build -t $PROJECT_NAME-$SERVICE:$IMAGE_TAG ./$SERVICE
@@ -53,12 +50,10 @@ phases:
 
   post_build:
     commands:
+      - echo "========== PUSH START =========="
       - |
-        export $(cat pipeline.env | xargs)
         if [ "$RUN_BUILD" = "true" ]; then
-          echo "========== PUSH START =========="
-          SERVICES=("api-gateway" "user-service" "tenant-service" "billing-service" "file-service")
-          for SERVICE in "${SERVICES[@]}"
+          for SERVICE in api-gateway user-service tenant-service billing-service file-service
           do
             echo "Pushing $SERVICE..."
             docker push $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
@@ -67,12 +62,10 @@ phases:
           echo "========== PUSH COMPLETE =========="
         fi
 
+      - echo "========== DEPLOY START =========="
       - |
-        export $(cat pipeline.env | xargs)
         if [ "$RUN_DEPLOY" = "true" ]; then
-          echo "========== DEPLOY START =========="
-          SERVICES=("api-gateway" "user-service" "tenant-service" "billing-service" "file-service")
-          for SERVICE in "${SERVICES[@]}"
+          for SERVICE in api-gateway user-service tenant-service billing-service file-service
           do
             echo "Deploying $SERVICE..."
             aws ecs update-service \
