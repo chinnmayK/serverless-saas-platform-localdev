@@ -2,7 +2,7 @@
 
 echo "Checking changed files..."
 
-CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD || true)
+CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git ls-files)
 echo "$CHANGED_FILES"
 
 RUN_ANALYSIS=false

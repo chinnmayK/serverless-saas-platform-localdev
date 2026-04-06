@@ -15,16 +15,18 @@ phases:
       - echo "========== PRE-BUILD START =========="
 
       - chmod +x scripts/detect-changes.sh
-      - ./scripts/detect-changes.sh
-      - export $(cat pipeline.env | xargs)
+      - ./scripts/detect-changes.sh || true
+      - export $(cat pipeline.env | xargs) || true
+
+      # TEMP FORCE BUILD (IMPORTANT)
+      - RUN_BUILD=true
+      - RUN_DEPLOY=true
 
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - ECR_URL=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
       - echo "Logging in to ECR..."
-      - aws ecr get-login-password --region $AWS_REGION | docker login \
-        --username AWS \
-        --password-stdin $ECR_URL
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
 
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
