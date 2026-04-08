@@ -68,8 +68,8 @@ Manages the ECS Fargate cluster and services.
 - **Services**: Manages the running tasks in private subnets without public IPs.
 
 ### DocumentDB Module ([`modules/documentdb`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/modules/documentdb))
-Provides a MongoDB-compatible DocumentDB cluster.
-- **Resources**: DocumentDB Cluster, Cluster Instance (`db.t3.medium`), Subnet Group, and Security Group (allowing 27017 from ECS).
+Provides a PostgreSQL RDS instance for the application.
+- **Resources**: RDS PostgreSQL instance (`db.t3.micro`), DB Subnet Group, and Security Group (allowing 5432 from ECS).
 
 ### Secrets Module ([`modules/secrets`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/modules/secrets))
 Manages sensitive application data using AWS Secrets Manager.
@@ -77,5 +77,5 @@ Manages sensitive application data using AWS Secrets Manager.
     - `JWT_SECRET` (Randomly generated)
     - `REDIS_URL`
     - `DB_PASSWORD`
-    - `DATABASE_URL` (Full MongoDB connection string)
+    - `DATABASE_URL` (Full PostgreSQL connection string)
 

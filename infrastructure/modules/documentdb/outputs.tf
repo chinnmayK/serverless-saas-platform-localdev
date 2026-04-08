@@ -1,12 +1,12 @@
 output "endpoint" {
-  description = "The DocumentDB cluster endpoint"
-  value       = aws_docdb_cluster.main.endpoint
+  description = "The PostgreSQL database endpoint"
+  value       = aws_db_instance.main.endpoint
 }
 
-output "cluster_id" {
-  value = aws_docdb_cluster.main.cluster_identifier
+output "instance_id" {
+  value = aws_db_instance.main.id
 }
 
 output "security_group_id" {
-  value = aws_security_group.docdb_sg.id
+  value = aws_security_group.postgres_sg.id
 }

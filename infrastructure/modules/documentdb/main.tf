@@ -1,28 +1,28 @@
 ########################################################
-# DOCUMENTDB SUBNET GROUP
+# RDS POSTGRES SUBNET GROUP
 ########################################################
 
-resource "aws_docdb_subnet_group" "main" {
-  name       = "${var.project_name}-docdb-subnet-group"
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.project_name}-postgres-subnet-group"
   subnet_ids = var.private_subnet_ids
 
   tags = {
-    Name = "${var.project_name}-docdb-subnet-group"
+    Name = "${var.project_name}-postgres-subnet-group"
   }
 }
 
 ########################################################
-# DOCUMENTDB SECURITY GROUP
+# RDS POSTGRES SECURITY GROUP
 ########################################################
 
-resource "aws_security_group" "docdb_sg" {
-  name        = "${var.project_name}-docdb-sg"
-  description = "Allow DocumentDB access from ECS tasks"
+resource "aws_security_group" "postgres_sg" {
+  name        = "${var.project_name}-postgres-sg"
+  description = "Allow PostgreSQL access from ECS tasks"
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = 27017
-    to_port         = 27017
+    from_port       = 5432
+    to_port         = 5432
     protocol        = "tcp"
     security_groups = [var.ecs_security_group_id]
   }
@@ -35,43 +35,31 @@ resource "aws_security_group" "docdb_sg" {
   }
 
   tags = {
-    Name = "${var.project_name}-docdb-sg"
+    Name = "${var.project_name}-postgres-sg"
   }
 }
 
 ########################################################
-# DOCUMENTDB CLUSTER
+# RDS POSTGRES INSTANCE
 ########################################################
 
-resource "aws_docdb_cluster" "main" {
-  cluster_identifier      = "${var.project_name}-docdb-cluster"
-  engine                  = "docdb"
-  master_username         = "docdbadmin"
-  master_password         = var.db_password
-  backup_retention_period = 5
-  preferred_backup_window = "07:00-09:00"
+resource "aws_db_instance" "main" {
+  identifier              = "${var.project_name}-postgres"
+  engine                  = "postgres"
+  instance_class          = "db.t3.micro"
+  allocated_storage       = 20
+  storage_encrypted       = true
+  username                = "app_user"
+  password                = var.db_password
+  db_name                 = "saas_db"
+  publicly_accessible     = false
+  multi_az                = false
   skip_final_snapshot     = true
-  db_subnet_group_name    = aws_docdb_subnet_group.main.name
-  vpc_security_group_ids  = [aws_security_group.docdb_sg.id]
-
-  storage_encrypted = true
-
-  tags = {
-    Name = "${var.project_name}-docdb-cluster"
-  }
-}
-
-########################################################
-# DOCUMENTDB CLUSTER INSTANCE
-########################################################
-
-resource "aws_docdb_cluster_instance" "cluster_instances" {
-  count              = 1
-  identifier         = "${var.project_name}-docdb-instance-${count.index}"
-  cluster_identifier = aws_docdb_cluster.main.id
-  instance_class     = "db.t3.medium"
+  db_subnet_group_name    = aws_db_subnet_group.main.name
+  vpc_security_group_ids  = [aws_security_group.postgres_sg.id]
+  backup_retention_period = 5
 
   tags = {
-    Name = "${var.project_name}-docdb-instance"
+    Name = "${var.project_name}-postgres"
   }
 }
