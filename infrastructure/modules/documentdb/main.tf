@@ -24,7 +24,7 @@ resource "aws_security_group" "docdb_sg" {
     from_port       = 27017
     to_port         = 27017
     protocol        = "tcp"
-    security_groups = [var.security_group_id]
+    security_groups = [var.ecs_security_group_id]
   }
 
   egress {

@@ -55,11 +55,11 @@ module "cicd" {
 module "documentdb" {
   source = "./modules/documentdb"
 
-  project_name       = var.project_name
-  vpc_id             = module.network.vpc_id
-  private_subnet_ids = module.network.private_subnet_ids
-  security_group_id  = module.network.security_group_id
-  db_password        = random_password.db_password.result
+  project_name          = var.project_name
+  vpc_id                = module.network.vpc_id
+  private_subnet_ids    = module.network.private_subnet_ids
+  ecs_security_group_id = module.network.security_group_id
+  db_password           = random_password.db_password.result
 }
 
 ########################################################
