@@ -52,6 +52,7 @@ phases:
         export JWT_SECRET=$(echo "$SECRET_JSON" | jq -r .JWT_SECRET)
         export REDIS_URL=$(echo "$SECRET_JSON" | jq -r .REDIS_URL)
         export DB_PASSWORD=$(echo "$SECRET_JSON" | jq -r .DB_PASSWORD)
+        export DATABASE_URL=$(echo "$SECRET_JSON" | jq -r .DATABASE_URL)
 
         echo "✅ Secrets loaded"
 

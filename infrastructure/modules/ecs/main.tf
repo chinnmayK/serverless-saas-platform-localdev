@@ -84,6 +84,10 @@ resource "aws_ecs_task_definition" "tasks" {
         {
           name      = "DB_PASSWORD"
           valueFrom = "${var.app_secrets_arn}:DB_PASSWORD::"
+        },
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.app_secrets_arn}:DATABASE_URL::"
         }
       ]
 
