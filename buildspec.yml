@@ -19,15 +19,17 @@ phases:
     commands:
       - echo "========== PRE-BUILD START =========="
 
-      # Force build & deploy (simplified pipeline)
+      # Fail fast
+      - set -e
+
+      # Force build & deploy
       - export RUN_BUILD=true
       - export RUN_DEPLOY=true
 
-      # AWS account + ECR
+      # AWS + ECR
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - ECR_URL=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      # Login to ECR
       - echo "Logging in to ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
 
@@ -35,22 +37,26 @@ phases:
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
       ########################################################
-      # 🔥 Fetch secrets from AWS Secrets Manager
+      # 🔥 Fetch secrets (SAFE VERSION)
       ########################################################
       - echo "Fetching secrets from Secrets Manager..."
 
-      - SECRET_JSON=$(aws secretsmanager get-secret-value \
-          --secret-id $PROJECT_NAME-app-secrets \
-          --region $AWS_REGION \
-          --query SecretString \
-          --output text)
+      - |
+        SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id "$PROJECT_NAME-app-secrets" --region "$AWS_REGION" --query SecretString --output text)
 
-      - export JWT_SECRET=$(echo $SECRET_JSON | jq -r .JWT_SECRET)
-      - export REDIS_URL=$(echo $SECRET_JSON | jq -r .REDIS_URL)
-      - export DB_PASSWORD=$(echo $SECRET_JSON | jq -r .DB_PASSWORD)
+        if [ -z "$SECRET_JSON" ]; then
+          echo "❌ Failed to fetch secrets"
+          exit 1
+        fi
+
+        export JWT_SECRET=$(echo "$SECRET_JSON" | jq -r .JWT_SECRET)
+        export REDIS_URL=$(echo "$SECRET_JSON" | jq -r .REDIS_URL)
+        export DB_PASSWORD=$(echo "$SECRET_JSON" | jq -r .DB_PASSWORD)
+
+        echo "✅ Secrets loaded"
 
       ########################################################
-      # 🔥 Generate .env files dynamically
+      # 🔥 Generate .env
       ########################################################
       - chmod +x scripts/generate-env.sh
       - ./scripts/generate-env.sh
@@ -69,11 +75,8 @@ phases:
 
             docker build -t $PROJECT_NAME-$SERVICE:$IMAGE_TAG ./$SERVICE
 
-            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG \
-              $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
-
-            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG \
-              $ECR_URL/$PROJECT_NAME-$SERVICE:latest
+            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
+            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:latest
           done
         else
           echo "Skipping build"
@@ -99,7 +102,7 @@ phases:
       - echo "========== PUSH COMPLETE =========="
 
       ########################################################
-      # 🚀 Deploy to ECS
+      # 🚀 Deploy ECS
       ########################################################
       - echo "========== DEPLOY START =========="
 
