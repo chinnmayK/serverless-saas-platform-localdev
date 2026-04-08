@@ -26,7 +26,7 @@ do
   echo "--------------------------------------"
   echo "Building $SERVICE..."
 
-  docker build -t $SERVICE ./$SERVICE
+  docker build -f $SERVICE/Dockerfile -t $SERVICE .
 
   IMAGE_URI="$ECR_BASE/$PROJECT-$SERVICE:latest"
 

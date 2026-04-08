@@ -74,7 +74,7 @@ phases:
           do
             echo "Building $SERVICE..."
 
-            docker build -t $PROJECT_NAME-$SERVICE:$IMAGE_TAG ./$SERVICE
+            docker build -f $SERVICE/Dockerfile -t $PROJECT_NAME-$SERVICE:$IMAGE_TAG .
 
             docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
             docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:latest
