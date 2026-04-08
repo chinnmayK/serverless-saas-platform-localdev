@@ -8,18 +8,18 @@ resource "aws_codestarconnections_connection" "github" {
 ########################################################
 
 resource "aws_codebuild_project" "build" {
-  name          = "${var.project_name}-build"
-  service_role  = var.codebuild_role_arn
+  name         = "${var.project_name}-build"
+  service_role = var.codebuild_role_arn
 
   artifacts {
     type = "NO_ARTIFACTS"
   }
 
   environment {
-    compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:7.0"
-    type                        = "LINUX_CONTAINER"
-    privileged_mode             = true
+    compute_type    = "BUILD_GENERAL1_SMALL"
+    image           = "aws/codebuild/standard:7.0"
+    type            = "LINUX_CONTAINER"
+    privileged_mode = true
 
     environment_variable {
       name  = "AWS_REGION"
@@ -44,7 +44,8 @@ resource "aws_codebuild_project" "build" {
 ########################################################
 
 resource "aws_s3_bucket" "pipeline_artifacts" {
-  bucket = "${var.project_name}-pipeline-artifacts"
+  bucket        = "${var.project_name}-pipeline-artifacts"
+  force_destroy = true
 }
 
 ########################################################

@@ -1,7 +1,3 @@
-output "mongo_secret_arn" {
-  value = aws_secretsmanager_secret.mongo_secret.arn
-}
-
-output "jwt_secret_arn" {
-  value = aws_secretsmanager_secret.jwt_secret.arn
+output "app_secrets_arn" {
+  value = aws_secretsmanager_secret.app_secrets.arn
 }

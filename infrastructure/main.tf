@@ -56,8 +56,7 @@ module "secrets" {
   source       = "./modules/secrets"
   project_name = var.project_name
 
-  # You will later map:
-  mongo_password  = random_password.db_password.result
+  db_password    = random_password.db_password.result
   redis_endpoint = module.network.redis_endpoint
 }
 
@@ -94,6 +93,7 @@ module "ecs" {
   # IAM roles
   execution_role_arn = module.iam.ecs_execution_role_arn
   task_role_arn      = module.iam.ecs_task_role_arn
+  app_secrets_arn    = module.secrets.app_secrets_arn
 
   depends_on = [
     module.ecr,

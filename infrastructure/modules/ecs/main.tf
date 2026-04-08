@@ -16,7 +16,7 @@ resource "aws_cloudwatch_log_group" "ecs_logs" {
 }
 
 ########################################################
-# COMMON CONTAINER CONFIG
+# SERVICES MAP
 ########################################################
 
 locals {
@@ -58,6 +58,35 @@ resource "aws_ecs_task_definition" "tasks" {
         }
       ]
 
+      environment = [
+        {
+          name  = "NODE_ENV"
+          value = "production"
+        },
+        {
+          name  = "PORT"
+          value = "3000"
+        }
+      ]
+
+      ##################################################
+      # 🔥 Secrets from Secrets Manager
+      ##################################################
+      secrets = [
+        {
+          name      = "JWT_SECRET"
+          valueFrom = "${var.app_secrets_arn}:JWT_SECRET::"
+        },
+        {
+          name      = "REDIS_URL"
+          valueFrom = "${var.app_secrets_arn}:REDIS_URL::"
+        },
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${var.app_secrets_arn}:DB_PASSWORD::"
+        }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -68,6 +97,8 @@ resource "aws_ecs_task_definition" "tasks" {
       }
     }
   ])
+
+  depends_on = [aws_cloudwatch_log_group.ecs_logs]
 }
 
 ########################################################
@@ -89,5 +120,8 @@ resource "aws_ecs_service" "services" {
     assign_public_ip = false
   }
 
-  depends_on = [aws_ecs_cluster.main]
+  depends_on = [
+    aws_ecs_cluster.main,
+    aws_ecs_task_definition.tasks
+  ]
 }

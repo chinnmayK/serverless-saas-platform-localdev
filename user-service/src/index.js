@@ -16,7 +16,7 @@ if (cluster.isPrimary) {
   });
 } else {
   const app = require('./server'); 
-  const PORT = process.env.PORT || 3002;
+  const PORT = process.env.PORT || 3000;
   
   app.listen(PORT, () => {
     console.log(`[Worker ${process.pid}] [user-service] Running on port ${PORT}`);

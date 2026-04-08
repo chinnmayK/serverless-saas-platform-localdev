@@ -17,9 +17,30 @@ resource "aws_iam_role" "ecs_execution_role" {
   })
 }
 
+# Default ECS execution policy
 resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# 🔥 ADD THIS (REQUIRED FOR SECRETS)
+resource "aws_iam_role_policy" "ecs_execution_extra" {
+  name = "${var.project_name}-ecs-execution-extra"
+  role = aws_iam_role.ecs_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 ########################################################
@@ -42,7 +63,7 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 
 ########################################################
-# TASK ROLE POLICY (SQS + EVENTBRIDGE + SECRETS)
+# TASK ROLE POLICY
 ########################################################
 
 resource "aws_iam_role_policy" "ecs_task_policy" {
@@ -53,7 +74,7 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
     Version = "2012-10-17"
     Statement = [
 
-      # SQS access
+      # SQS
       {
         Effect = "Allow"
         Action = [
@@ -74,7 +95,7 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
         Resource = "*"
       },
 
-      # Secrets Manager
+      # Secrets
       {
         Effect = "Allow"
         Action = [
@@ -87,7 +108,7 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
 }
 
 ########################################################
-# OPTIONAL: CODEBUILD ROLE (for CI/CD)
+# CODEBUILD ROLE
 ########################################################
 
 resource "aws_iam_role" "codebuild_role" {
@@ -105,31 +126,64 @@ resource "aws_iam_role" "codebuild_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "codebuild_ecr" {
-  role       = aws_iam_role.codebuild_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
-}
-
-resource "aws_iam_role_policy_attachment" "codebuild_logs" {
-  role       = aws_iam_role.codebuild_role.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
-}
-
+# S3 (pipeline artifacts)
 resource "aws_iam_role_policy_attachment" "codebuild_s3" {
   role       = aws_iam_role.codebuild_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
-resource "aws_iam_role_policy" "codebuild_extra" {
+# 🔥 MAIN CI/CD POLICY
+resource "aws_iam_role_policy" "codebuild_policy" {
+  name = "${var.project_name}-codebuild-policy"
   role = aws_iam_role.codebuild_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+
+      # ECR
       {
         Effect = "Allow"
         Action = [
-          "ecs:*"
+          "ecr:*"
+        ]
+        Resource = "*"
+      },
+
+      # ECS deploy
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:UpdateService",
+          "ecs:DescribeServices",
+          "ecs:DescribeTaskDefinition"
+        ]
+        Resource = "*"
+      },
+
+      # Secrets Manager
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = "*"
+      },
+
+      # Logs
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:*"
+        ]
+        Resource = "*"
+      },
+
+      # Identity
+      {
+        Effect = "Allow"
+        Action = [
+          "sts:GetCallerIdentity"
         ]
         Resource = "*"
       }
@@ -163,17 +217,21 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+
+      # S3 artifacts
       {
         Effect = "Allow"
         Action = [
           "s3:GetObject",
           "s3:GetObjectVersion",
           "s3:GetBucketVersioning",
-          "s3:PutObjectAcl",
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:PutObjectAcl"
         ]
         Resource = "*"
       },
+
+      # GitHub connection
       {
         Effect = "Allow"
         Action = [
@@ -181,11 +239,13 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         ]
         Resource = "*"
       },
+
+      # Trigger CodeBuild
       {
         Effect = "Allow"
         Action = [
-          "codebuild:BatchGetBuilds",
-          "codebuild:StartBuild"
+          "codebuild:StartBuild",
+          "codebuild:BatchGetBuilds"
         ]
         Resource = "*"
       }

@@ -13,3 +13,4 @@ variable "user_service_image" {}
 variable "tenant_service_image" {}
 variable "billing_service_image" {}
 variable "file_service_image" {}
+variable "app_secrets_arn" {}

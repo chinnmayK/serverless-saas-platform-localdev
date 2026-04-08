@@ -5,7 +5,7 @@ const logger = require("@saas/shared/utils/logger");
 const requestLogger = require("@saas/shared/middleware/requestLogger");
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 const usage = require("@saas/shared/middleware/usageMiddleware");
 

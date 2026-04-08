@@ -10,71 +10,114 @@ phases:
   install:
     runtime-versions:
       nodejs: 20
+    commands:
+      - echo "Installing dependencies..."
+      - apt-get update
+      - apt-get install -y jq
 
   pre_build:
     commands:
       - echo "========== PRE-BUILD START =========="
 
-      # - chmod +x scripts/detect-changes.sh
-      # - ./scripts/detect-changes.sh || true
-      # FORCE BUILD & DEPLOY (MANDATORY FOR CODEBUILD)
+      # Force build & deploy (simplified pipeline)
       - export RUN_BUILD=true
       - export RUN_DEPLOY=true
 
+      # AWS account + ECR
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - ECR_URL=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
+      # Login to ECR
       - echo "Logging in to ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
 
+      # Image tag
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
+      ########################################################
+      # 🔥 Fetch secrets from AWS Secrets Manager
+      ########################################################
+      - echo "Fetching secrets from Secrets Manager..."
+
+      - SECRET_JSON=$(aws secretsmanager get-secret-value \
+          --secret-id $PROJECT_NAME-app-secrets \
+          --region $AWS_REGION \
+          --query SecretString \
+          --output text)
+
+      - export JWT_SECRET=$(echo $SECRET_JSON | jq -r .JWT_SECRET)
+      - export REDIS_URL=$(echo $SECRET_JSON | jq -r .REDIS_URL)
+      - export DB_PASSWORD=$(echo $SECRET_JSON | jq -r .DB_PASSWORD)
+
+      ########################################################
+      # 🔥 Generate .env files dynamically
+      ########################################################
+      - chmod +x scripts/generate-env.sh
+      - ./scripts/generate-env.sh
 
       - echo "========== PRE-BUILD COMPLETE =========="
 
   build:
     commands:
       - echo "========== BUILD START =========="
+
       - |
         if [ "$RUN_BUILD" = "true" ]; then
           for SERVICE in api-gateway user-service tenant-service billing-service file-service
           do
             echo "Building $SERVICE..."
+
             docker build -t $PROJECT_NAME-$SERVICE:$IMAGE_TAG ./$SERVICE
-            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
-            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG $ECR_URL/$PROJECT_NAME-$SERVICE:latest
+
+            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG \
+              $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
+
+            docker tag $PROJECT_NAME-$SERVICE:$IMAGE_TAG \
+              $ECR_URL/$PROJECT_NAME-$SERVICE:latest
           done
         else
-          echo "Skipping build - no changes detected"
+          echo "Skipping build"
         fi
+
       - echo "========== BUILD COMPLETE =========="
 
   post_build:
     commands:
       - echo "========== PUSH START =========="
+
       - |
         if [ "$RUN_BUILD" = "true" ]; then
           for SERVICE in api-gateway user-service tenant-service billing-service file-service
           do
             echo "Pushing $SERVICE..."
+
             docker push $ECR_URL/$PROJECT_NAME-$SERVICE:$IMAGE_TAG
             docker push $ECR_URL/$PROJECT_NAME-$SERVICE:latest
           done
-          echo "========== PUSH COMPLETE =========="
         fi
 
+      - echo "========== PUSH COMPLETE =========="
+
+      ########################################################
+      # 🚀 Deploy to ECS
+      ########################################################
       - echo "========== DEPLOY START =========="
+
       - |
         if [ "$RUN_DEPLOY" = "true" ]; then
           for SERVICE in api-gateway user-service tenant-service billing-service file-service
           do
             echo "Deploying $SERVICE..."
+
             aws ecs update-service \
               --cluster $PROJECT_NAME-cluster \
               --service $PROJECT_NAME-$SERVICE \
-              --force-new-deployment
+              --force-new-deployment \
+              --region $AWS_REGION
           done
-          echo "========== DEPLOY COMPLETE =========="
         fi
+
+      - echo "========== DEPLOY COMPLETE =========="
 
 artifacts:
   files:
