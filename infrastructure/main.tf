@@ -76,27 +76,19 @@ module "secrets" {
 }
 
 ########################################################
-# MESSAGING MODULE (OPTIONAL - KEEP)
-########################################################
-
-module "messaging" {
-  source       = "./modules/messaging"
-  project_name = var.project_name
-  email        = var.email
-}
-
-########################################################
 # ECS FARGATE MODULE (NEW - IMPORTANT)
 ########################################################
 
 module "ecs" {
   source = "./modules/ecs"
 
-  project_name       = var.project_name
-  aws_region         = var.aws_region
-  vpc_id             = module.network.vpc_id
-  private_subnet_ids = module.network.private_subnet_ids
-  security_group_id  = module.network.security_group_id
+  project_name          = var.project_name
+  aws_region            = var.aws_region
+  vpc_id                = module.network.vpc_id
+  public_subnet_ids     = module.network.public_subnet_ids
+  private_subnet_ids    = module.network.private_subnet_ids
+  security_group_id     = module.network.security_group_id
+  alb_security_group_id = module.network.alb_security_group_id
 
   # ECR repositories (from ecr module)
   api_gateway_image     = module.ecr.api_gateway_repo_url
@@ -115,4 +107,27 @@ module "ecs" {
     module.network,
     module.iam
   ]
+}
+
+# Explicit ECS connectivity validation for DocumentDB and Redis.
+# This creates explicit cross-security-group egress rules in addition to the
+# existing inbound rules on the target resources.
+resource "aws_security_group_rule" "ecs_to_docdb" {
+  type                     = "egress"
+  from_port                = 27017
+  to_port                  = 27017
+  protocol                 = "tcp"
+  security_group_id        = module.network.security_group_id
+  source_security_group_id = module.documentdb.security_group_id
+  description              = "Allow ECS tasks to reach DocumentDB"
+}
+
+resource "aws_security_group_rule" "ecs_to_redis" {
+  type                     = "egress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  security_group_id        = module.network.security_group_id
+  source_security_group_id = module.network.redis_security_group_id
+  description              = "Allow ECS tasks to reach Redis"
 }

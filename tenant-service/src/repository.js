@@ -1,4 +1,5 @@
 const db = require("@saas/shared/utils/db");
+const logger = require("@saas/shared/utils/logger");
 
 const DEFAULT_FEATURES = {
   free: ["basic_upload", "basic_api"],
@@ -8,7 +9,7 @@ const DEFAULT_FEATURES = {
 
 async function createTenant({ name, slug, plan = "free" }) {
   // Step 1: insert tenant without tenant context (it doesn't exist yet)
-  console.log(`[repository] Inserting tenant: name=${name}, slug=${slug}, plan=${plan}`);
+  logger.info("tenant-service.repository.insert_tenant", { name, slug, plan });
   const tenantResult = await db.query(
     `INSERT INTO tenants (name, slug, plan) VALUES ($1, $2, $3) RETURNING *`,
     [name, slug, plan]
@@ -27,7 +28,7 @@ async function createTenant({ name, slug, plan = "free" }) {
     }
 
     // Create default subscription
-    console.log(`[repository] Setting tenant context for RLS: ${tenant.tenant_id}`);
+    logger.debug("tenant-service.repository.setting_tenant_context", { tenantId: tenant.tenant_id });
     await client.query(
       `INSERT INTO subscriptions (tenant_id, plan) VALUES ($1, $2)`,
       [tenant.tenant_id, plan]

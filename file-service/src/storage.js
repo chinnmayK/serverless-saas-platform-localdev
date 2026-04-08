@@ -1,4 +1,5 @@
 const { MinioClient: client } = require("@saas/shared/utils");
+const logger = require("@saas/shared/utils/logger");
 
 const bucket = process.env.MINIO_BUCKET;
 
@@ -6,7 +7,7 @@ async function initBucket() {
   const exists = await client.bucketExists(bucket).catch(() => false);
   if (!exists) {
     await client.makeBucket(bucket);
-    console.log('✅ Bucket created:', bucket);
+    logger.info("file-service.storage.bucket_created", { bucket });
   }
 }
 

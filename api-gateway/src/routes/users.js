@@ -2,10 +2,12 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const router = express.Router();
 
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service.internal.serverless-saas-platform-localdev:3002';
+
 router.use(
   '/',
   createProxyMiddleware({
-    target: process.env.USER_SERVICE_URL || 'http://user-service:3002',
+    target: USER_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path, req) => {
         // Since this router might be used for both /auth and /users in internal.js

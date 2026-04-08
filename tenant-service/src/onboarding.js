@@ -3,6 +3,7 @@ const jwt          = require('jsonwebtoken');
 const { v4: uuid } = require('uuid');
 const { getPool }  = require('@saas/shared/utils/db');
 const { MinioClient } = require('@saas/shared/utils');   // adjusted to actual export
+const logger       = require('@saas/shared/utils/logger');
 
 const SALT_ROUNDS    = 12;
 const JWT_SECRET     = process.env.JWT_SECRET;
@@ -63,7 +64,7 @@ async function onboard({ tenantName, adminEmail, adminPassword, adminName }) {
       await provisionStorage(tenantId);
     } catch (storageErr) {
       // Non-fatal — bucket can be created on first upload
-      console.warn(`[onboarding] MinIO bucket provision failed: ${storageErr.message}`);
+      logger.warn("tenant-service.onboarding.minio_provision_failed", { error: storageErr.message });
     }
 
     // 6. Issue JWT

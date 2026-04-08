@@ -1,24 +1,34 @@
 const cluster = require('cluster');
 const os = require('os');
+const logger = require('@saas/shared/utils/logger');
+const { connectWithRetry } = require('@saas/shared/utils/db');
 
 if (cluster.isPrimary) {
   // ✅ FIX: Limit workers to avoid connection pool saturation & resource contention
   const numCPUs = Math.min(os.cpus().length, 4);
-  console.log(`[Primary ${process.pid}] for user-service is running. Forking ${numCPUs} workers...`);
+  logger.info('user-service.primary.start', { pid: process.pid, numCPUs });
 
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    console.log(`[Worker ${worker.process.pid}] for user-service died. Forking a new worker...`);
+    logger.warn('user-service.worker.died', { workerPid: worker.process.pid, code, signal });
     cluster.fork();
   });
 } else {
   const app = require('./server'); 
   const PORT = process.env.PORT || 3000;
-  
-  app.listen(PORT, () => {
-    console.log(`[Worker ${process.pid}] [user-service] Running on port ${PORT}`);
+
+  async function start() {
+    await connectWithRetry();
+    app.listen(PORT, () => {
+      logger.info('user-service.started', { pid: process.pid, port: PORT });
+    });
+  }
+
+  start().catch((err) => {
+    logger.error("user-service.start_failed", { error: err.message });
+    process.exit(1);
   });
 }

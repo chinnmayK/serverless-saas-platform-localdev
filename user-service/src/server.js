@@ -41,6 +41,6 @@ module.exports = app;
 // Listen if run directly
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`[user-service] Running on port ${PORT}`);
+    logger.info('user-service.started', { port: PORT });
   });
 }

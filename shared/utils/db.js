@@ -6,12 +6,49 @@ const logger = require("./logger");
 const tenantContext = new AsyncLocalStorage();
 
 // ─── Primary pool — app_user with RLS enforced ────────────────────────────────
+function parseDatabaseUrl(connectionString) {
+  try {
+    const dbUrl = new URL(connectionString);
+    return {
+      host: dbUrl.hostname,
+      port: parseInt(dbUrl.port || "5432"),
+      database: dbUrl.pathname ? dbUrl.pathname.slice(1) : undefined,
+      user: dbUrl.username,
+      password: dbUrl.password,
+    };
+  } catch (err) {
+    return {};
+  }
+}
+
+function getDbConfig() {
+  const databaseUrl = process.env.DATABASE_URL || process.env.DB_URL || process.env.MONGO_URI;
+
+  if (databaseUrl) {
+    const parsed = parseDatabaseUrl(databaseUrl);
+    return {
+      connectionString: databaseUrl,
+      host: parsed.host,
+      port: parsed.port,
+      database: parsed.database,
+      user: parsed.user || process.env.DB_USER || "app_user",
+      password: parsed.password || process.env.DB_PASSWORD || "app_password",
+    };
+  }
+
+  return {
+    host:     process.env.DB_HOST     || "localhost",
+    port:     parseInt(process.env.DB_PORT || "5432"),
+    database: process.env.DB_NAME     || "saas_db",
+    user:     process.env.DB_USER     || "app_user",
+    password: process.env.DB_PASSWORD || "app_password",
+  };
+}
+
+const baseDbConfig = getDbConfig();
+
 const pool = new Pool({
-  host:     process.env.DB_HOST     || "localhost",
-  port:     parseInt(process.env.DB_PORT || "5432"),
-  database: process.env.DB_NAME     || "saas_db",
-  user:     process.env.DB_USER     || "app_user",
-  password: process.env.DB_PASSWORD || "app_password",
+  ...baseDbConfig,
   // 🔥 FINAL POOL TUNING
   max: 10,
   idleTimeoutMillis: 30000,
@@ -21,9 +58,7 @@ const pool = new Pool({
 
 // ─── Auth pool — auth_user, bypasses RLS, used ONLY for login ─────────────────
 const authPool = new Pool({
-  host:     process.env.DB_HOST          || "localhost",
-  port:     parseInt(process.env.DB_PORT || "5432"),
-  database: process.env.DB_NAME          || "saas_db",
+  ...baseDbConfig,
   user:     process.env.AUTH_DB_USER     || "auth_user",
   password: process.env.AUTH_DB_PASSWORD || "auth_password",
   max: 1, // 🔥 Reverted to 1
@@ -33,6 +68,32 @@ const authPool = new Pool({
 
 pool.on("error",     (err) => logger.error("Pool error",      { error: err.message }));
 authPool.on("error", (err) => logger.error("Auth pool error", { error: err.message }));
+
+async function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function connectWithRetry(options = {}) {
+  const delayMs = options.delayMs || 5000;
+  let attempt = 0;
+
+  while (true) {
+    try {
+      attempt += 1;
+      const client = await pool.connect();
+      client.release();
+      logger.info("Database connected", { attempt });
+      return;
+    } catch (err) {
+      logger.warn("Database connection failed, retrying", {
+        error: err.message,
+        attempt,
+        delayMs,
+      });
+      await delay(delayMs);
+    }
+  }
+}
 
 // ─── Query Logging Wrapper ──────────────────────────────────────────────────
 const originalQuery = pool.query;
@@ -116,5 +177,6 @@ module.exports = {
   tenantQuery, 
   tenantContext, 
   pool,
-  getPool
+  getPool,
+  connectWithRetry,
 };

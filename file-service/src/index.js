@@ -35,7 +35,11 @@ process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled promise rejection", { reason: String(reason) });
 });
 
+const { connectWithRetry } = require("@saas/shared/utils/db");
+
 async function start() {
+  await connectWithRetry();
+
   // Wait for MinIO to be ready, then ensure bucket exists
   let retries = 10;
   while (retries--) {
@@ -43,13 +47,13 @@ async function start() {
       await initBucket();
       break;
     } catch (err) {
-      console.warn(`[file-service] MinIO not ready yet, retrying... (${retries} left)`);
+      logger.warn('file-service.minio_not_ready', { retriesLeft: retries });
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
 
   app.listen(PORT, () => {
-    console.log(`[file-service] Running on port ${PORT}`);
+    logger.info('file-service.started', { port: PORT });
   });
 }
 

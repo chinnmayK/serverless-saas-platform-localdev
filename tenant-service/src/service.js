@@ -30,11 +30,11 @@ async function createTenant(data) {
   while (retries--) {
     try {
       const slug = await generateUniqueSlug(name);
-      console.log(`[service] Creating tenant with name: ${name}, slug: ${slug}`);
+      logger.info("tenant-service.create_tenant_attempt", { name, slug });
       return await repo.createTenant({ name, slug, plan: data.plan });
     } catch (err) {
       if (err.code === "23505" && retries > 0) { // Unique violation
-        console.warn(`Slug collision detected, retrying... (${retries} left)`);
+        logger.warn("tenant-service.slug_collision_retry", { retries });
         continue;
       }
       throw err;

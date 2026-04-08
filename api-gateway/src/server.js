@@ -2,6 +2,7 @@ require('./tracing');
 
 const express = require('express');
 const app = express();
+const logger = require('@saas/shared/utils/logger');
 
 
 // ✅ IMPORTS
@@ -17,7 +18,7 @@ const { client, httpRequestDuration, httpRequestTotal, requestSuccessTotal, tena
 
 // Timing middleware — place BEFORE your routes
 app.use((req, res, next) => {
-  console.log(`[GW-REQ] ${req.method} ${req.url}`);
+  logger.info('incoming.request', { method: req.method, url: req.url });
   const end = httpRequestDuration.startTimer();
 
   res.on('finish', () => {
@@ -41,7 +42,7 @@ app.use((req, res, next) => {
 
 
 // ✅ PUBLIC ROUTES FIRST (NO AUTH)
-app.get('/health', (req, res) => res.send('OK'));
+app.get('/health', (req, res) => res.json({ status: 'ok', service: 'api-gateway', uptime: process.uptime() }));
 
 // ✅ Top-level /onboarding proxy (public, no /api prefix needed)
 const { streamProxy } = require('@saas/shared/utils/streamProxy');
@@ -58,7 +59,7 @@ app.get('/metrics', async (req, res) => {
 
 
 // 🔥 LOGGER (must be early)
-// app.use(requestLogger);
+app.use(requestLogger);
 
 // 🔥 PUBLIC — must be before global auth guard
 app.use('/api', tenantRoutes);
@@ -119,6 +120,6 @@ module.exports = app;
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
-    console.log(`[api-gateway] Running on port ${PORT}`);
+    logger.info('api-gateway.started', { port: PORT });
   });
 }

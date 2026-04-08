@@ -3,6 +3,7 @@ const express = require("express");
 const tenantRoutes = require("./routes");
 const logger = require("@saas/shared/utils/logger");
 const requestLogger = require("@saas/shared/middleware/requestLogger");
+const { connectWithRetry } = require("@saas/shared/utils/db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,14 @@ process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled promise rejection", { reason: String(reason) });
 });
 
-app.listen(PORT, () => {
-  console.log(`[tenant-service] Running on port ${PORT}`);
+async function start() {
+  await connectWithRetry();
+  app.listen(PORT, () => {
+    logger.info('tenant-service.started', { port: PORT });
+  });
+}
+
+start().catch((err) => {
+  logger.error("tenant-service.start_failed", { error: err.message });
+  process.exit(1);
 });

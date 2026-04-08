@@ -1,3 +1,5 @@
+const logger = require('./logger');
+
 async function retry(fn, options = {}) {
   const {
     retries = 3,
@@ -17,7 +19,7 @@ async function retry(fn, options = {}) {
       }
 
       const wait = delay * Math.pow(factor, attempt);
-      console.warn(`⏳ Retry ${attempt + 1}/${retries} in ${wait}ms`);
+      logger.warn('utils.retry_wait', { attempt: attempt + 1, retries, wait, error: err.message });
 
       await new Promise(res => setTimeout(res, wait));
       attempt++;

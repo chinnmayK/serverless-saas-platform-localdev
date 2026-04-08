@@ -4,13 +4,15 @@ const tenantMiddleware = require('@saas/shared/middleware/tenantMiddleware');
 const usageMiddleware = require('@saas/shared/middleware/usageMiddleware');
 const { serviceClient } = require('@saas/shared/utils/serviceClient');
 const response = require('@saas/shared/utils/response');
+const logger = require('@saas/shared/utils/logger');
 
 const router = express.Router();
-
 const axios = require('axios');
 
+const FILE_SERVICE_URL = process.env.FILE_SERVICE_URL || 'http://file-service:3004';
+
 router.post('/upload', authMiddleware, tenantMiddleware, usageMiddleware, async (req, res) => {
-  const target = `${process.env.FILE_SERVICE_URL}/files/upload`;
+  const target = `${FILE_SERVICE_URL}/files/upload`;
   try {
     // Note: for multipart/form-data, we need to handle the stream if we were 
     // using a more complex proxy, but since we're using express.json() 
@@ -32,13 +34,13 @@ router.post('/upload', authMiddleware, tenantMiddleware, usageMiddleware, async 
     if (error.response) {
       return res.status(error.response.status).json(error.response.data);
     }
-    console.error('[files.upload]', error.message);
+    logger.error('files.upload.failed', { error: error.message });
     res.status(500).json({ success: false, error: 'Upload failed: ' + error.message });
   }
 });
 
 router.get('/:fileId/download', authMiddleware, tenantMiddleware, usageMiddleware, async (req, res) => {
-  const target = `${process.env.FILE_SERVICE_URL}/files/${req.params.fileId}/download`;
+  const target = `${FILE_SERVICE_URL}/files/${req.params.fileId}/download`;
   try {
     const response = await axios({
       method: 'GET',
@@ -56,7 +58,7 @@ router.get('/:fileId/download', authMiddleware, tenantMiddleware, usageMiddlewar
       // If error is a stream, we might need to read it or just return a static JSON
       return res.status(error.response.status).json({ success: false, error: 'File not found' });
     }
-    console.error('[files.download]', error.message);
+    logger.error('files.download.failed', { error: error.message });
     res.status(404).json({ success: false, error: 'File not found' });
   }
 });

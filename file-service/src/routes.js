@@ -10,7 +10,8 @@ const { assertKeyBelongsToTenant } = storage;
 const upload = require("./upload");
 const logger = require("@saas/shared/utils/logger");
 const { getServiceBreaker } = require("@saas/shared/utils/serviceClient");
-const billingBreaker = getServiceBreaker("billing-service", process.env.BILLING_SERVICE_URL);
+const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL || 'http://billing-service:3003';
+const billingBreaker = getServiceBreaker("billing-service", BILLING_SERVICE_URL);
 
 // All file routes are protected
 router.use(auth, tenantCtx);

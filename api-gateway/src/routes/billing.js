@@ -6,12 +6,13 @@ const { serviceClient } = require('@saas/shared/utils');
 const { authMiddleware } = require('@saas/shared/middleware');
 const router = express.Router();
 
+const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL || 'http://billing-service:3003';
 const billingBreaker = getBreaker('billing-service', { threshold: 3, timeout: 15000 });
 
 // Custom usage summary route
 router.get('/usage', async (req, res) => {
   try {
-    const data = await billingBreaker.execute(() => axios.get('http://billing-service:3003/billing/usage', {
+    const data = await billingBreaker.execute(() => axios.get(`${BILLING_SERVICE_URL}/billing/usage`, {
       headers: req.headers,
     }));
     res.json(data.data);
@@ -25,20 +26,20 @@ router.get('/usage', async (req, res) => {
 });
 
 router.post('/create-checkout', authMiddleware, async (req, res) => {
-  const data = await serviceClient.post('http://billing-service:3003/billing/create-checkout', req.body, req.headers);
+  const data = await serviceClient.post(`${BILLING_SERVICE_URL}/billing/create-checkout`, req.body, req.headers);
   res.json(data);
 });
 
 router.post('/portal', authMiddleware, async (req, res) => {
-  const data = await serviceClient.post('http://billing-service:3003/billing/portal', {}, req.headers);
+  const data = await serviceClient.post(`${BILLING_SERVICE_URL}/billing/portal`, {}, req.headers);
   res.json(data);
 });
 
 // Webhook — no auth, forward raw body
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const response = await fetch('http://billing-service:3003/billing/webhook', {
+  const response = await fetch(`${BILLING_SERVICE_URL}/billing/webhook`, {
     method: 'POST',
-    headers: { ...req.headers, host: 'billing-service:3003' },
+    headers: { ...req.headers, host: BILLING_SERVICE_URL.replace(/^https?:\/\//, '') },
     body: req.body,
   });
   const data = await response.json();

@@ -5,10 +5,10 @@ const billingRoutes = require('./billing');
 
 // 🔥 SERVICE URLs (Docker service names)
 const SERVICES = {
-  tenant: process.env.TENANT_SERVICE_URL || 'http://localhost:3001',
-  user: process.env.USER_SERVICE_URL || 'http://localhost:3002',
-  billing: process.env.BILLING_SERVICE_URL || 'http://localhost:3003',
-  file: process.env.FILE_SERVICE_URL || 'http://localhost:3004',
+  tenant: process.env.TENANT_SERVICE_URL || 'http://tenant-service.internal.serverless-saas-platform-localdev:3001',
+  user: process.env.USER_SERVICE_URL || 'http://user-service.internal.serverless-saas-platform-localdev:3002',
+  billing: process.env.BILLING_SERVICE_URL || 'http://billing-service.internal.serverless-saas-platform-localdev:3003',
+  file: process.env.FILE_SERVICE_URL || 'http://file-service.internal.serverless-saas-platform-localdev:3004',
 };
 
 // 🔥 GENERIC PROXY FUNCTION (STREAMING)

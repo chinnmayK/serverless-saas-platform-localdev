@@ -1,4 +1,5 @@
 const { getPool } = require('../utils/db');
+const logger = require('../utils/logger');
 
 /**
  * Blocks access if tenant has not completed onboarding.
@@ -22,7 +23,7 @@ async function onboardingGuard(req, res, next) {
     }
     next();
   } catch (err) {
-    console.error('[onboardingGuard] Error:', err.message);
+    logger.error('middleware.onboardingGuard_error', { error: err.message, tenantId: req.tenantId || null });
     res.status(500).json({ error: 'Internal Server Error during onboarding check' });
   }
 }
