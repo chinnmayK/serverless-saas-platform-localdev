@@ -6,59 +6,22 @@ const logger = require("./logger");
 const tenantContext = new AsyncLocalStorage();
 
 // ─── Primary pool — app_user with RLS enforced ────────────────────────────────
-function parseDatabaseUrl(connectionString) {
-  try {
-    const dbUrl = new URL(connectionString);
-    return {
-      host: dbUrl.hostname,
-      port: parseInt(dbUrl.port || "5432"),
-      database: dbUrl.pathname ? dbUrl.pathname.slice(1) : undefined,
-      user: dbUrl.username,
-      password: dbUrl.password,
-    };
-  } catch (err) {
-    return {};
-  }
-}
-
-function getDbConfig() {
-  const databaseUrl = process.env.DATABASE_URL || process.env.DB_URL || process.env.MONGO_URI;
-
-  if (databaseUrl) {
-    return {
-      connectionString: databaseUrl,
-    };
-  }
-
-  return {
-    host:     process.env.DB_HOST     || "localhost",
-    port:     parseInt(process.env.DB_PORT || "5432"),
-    database: process.env.DB_NAME     || "saas_db",
-    user:     process.env.DB_USER     || "app_user",
-    password: process.env.DB_PASSWORD || "app_password",
-  };
-}
-
-const baseDbConfig = getDbConfig();
-const sslConfig = process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined;
-
 const pool = new Pool({
-  ...baseDbConfig,
-  ssl: sslConfig,
-  // 🔥 FINAL POOL TUNING
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
-  statement_timeout: 3000, // 🛡️ Protect pool from long-hanging queries
+  statement_timeout: 3000,
 });
 
 // ─── Auth pool — auth_user, bypasses RLS, used ONLY for login ─────────────────
 const authPool = new Pool({
-  ...baseDbConfig,
-  ssl: sslConfig,
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
   user:     process.env.AUTH_DB_USER     || "auth_user",
   password: process.env.AUTH_DB_PASSWORD || "auth_password",
-  max: 1, // 🔥 Reverted to 1
+  max: 1,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });

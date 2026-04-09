@@ -12,7 +12,7 @@ This document provides a comprehensive overview of the Terraform-managed infrast
   - [ECR Module (`modules/ecr`)](#ecr-module-modulesecr)
   - [CICD Module (`modules/cicd`)](#cicd-module-modulescicd)
   - [ECS Module (`modules/ecs`)](#ecs-module-modulesecs)
-  - [DocumentDB Module (`modules/documentdb`)](#documentdb-module-modulesdocumentdb)
+  - [PostgreSQL Module (`modules/postgres`)](#postgresql-module-modulespostgres)
   - [Secrets Module (`modules/secrets`)](#secrets-module-modulessecrets)
 
 ---
@@ -23,10 +23,10 @@ The root directory orchestrates the various modules and defines the backend and 
 
 | File | Description |
 | :--- | :--- |
-| [`main.tf`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/main.tf) | Main entry point that calls all infrastructure modules (network, iam, ecr, cicd, documentdb, secrets, and ecs). |
+| [`main.tf`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/main.tf) | Main entry point that calls all infrastructure modules (network, iam, ecr, cicd, postgres, secrets, and ecs). |
 | [`variables.tf`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/variables.tf) | Global variable definitions (`project_name`, `environment`, `aws_region`, `github_repo`, `email`). |
 | [`providers.tf`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/providers.tf) | Configures AWS and Random providers. Defines S3 backend for remote state storage. |
-| [`outputs.tf`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/outputs.tf) | Root-level outputs including VPC ID, Redis endpoint, Private subnets, and ECR repository URLs. |
+| [`outputs.tf`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/outputs.tf) | Root-level outputs including PostgreSQL endpoint, VPC ID, Redis endpoint, Private subnets, and ECR repository URLs. |
 | [`terraform.tfvars`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/terraform.tfvars) | Environment-specific variable values. |
 
 ---
@@ -67,9 +67,10 @@ Manages the ECS Fargate cluster and services.
 - **Tasks**: For each service, it defines a Fargate Task Definition with memory/CPU limits, container mappings, logging, and secrets injection.
 - **Services**: Manages the running tasks in private subnets without public IPs.
 
-### DocumentDB Module ([`modules/documentdb`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/modules/documentdb))
-Provides a PostgreSQL RDS instance for the application.
-- **Resources**: RDS PostgreSQL instance (`db.t3.micro`), DB Subnet Group, and Security Group (allowing 5432 from ECS).
+### PostgreSQL Module ([`modules/postgres`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/modules/postgres))
+Provides the PostgreSQL RDS instance for the application.
+- **Resources**: RDS PostgreSQL 15 instance (`db.t3.micro`), DB Subnet Group, and Security Group (allowing port 5432 from ECS).
+- **Outputs**: `postgres_endpoint` (hostname only via `.address`), `postgres_sg_id`.
 
 ### Secrets Module ([`modules/secrets`](file:///c:/Users/dell/serverless-saas-platform-localdev/infrastructure/modules/secrets))
 Manages sensitive application data using AWS Secrets Manager.

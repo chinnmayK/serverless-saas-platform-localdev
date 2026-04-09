@@ -52,8 +52,8 @@ module "cicd" {
 # POSTGRESQL MODULE
 ########################################################
 
-module "documentdb" {
-  source = "./modules/documentdb"
+module "postgres" {
+  source = "./modules/postgres"
 
   project_name          = var.project_name
   vpc_id                = module.network.vpc_id
@@ -72,11 +72,11 @@ module "secrets" {
 
   db_password    = random_password.db_password.result
   redis_endpoint = module.network.redis_endpoint
-  db_endpoint    = module.documentdb.endpoint
+  db_endpoint    = module.postgres.postgres_endpoint
 }
 
 ########################################################
-# ECS FARGATE MODULE (NEW - IMPORTANT)
+# ECS FARGATE MODULE
 ########################################################
 
 module "ecs" {
@@ -118,7 +118,7 @@ resource "aws_security_group_rule" "ecs_to_postgres" {
   to_port                  = 5432
   protocol                 = "tcp"
   security_group_id        = module.network.security_group_id
-  source_security_group_id = module.documentdb.security_group_id
+  source_security_group_id = module.postgres.postgres_sg_id
   description              = "Allow ECS tasks to reach PostgreSQL"
 }
 

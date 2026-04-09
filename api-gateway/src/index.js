@@ -17,11 +17,17 @@ if (cluster.isPrimary) {
     cluster.fork();
   });
 } else {
-  // Workers handle the server logic
-  const app = require('./server'); // This is the renamed server.js
+  const app = require('./server');
+  const { connectWithRetry } = require('@saas/shared/utils/db');
   const PORT = process.env.PORT || 3000;
-  
-  app.listen(PORT, () => {
-    logger.info('api-gateway.started', { pid: process.pid, port: PORT });
+
+  (async () => {
+    await connectWithRetry({ delayMs: 5000 });
+    app.listen(PORT, () => {
+      logger.info('api-gateway.started', { pid: process.pid, port: PORT });
+    });
+  })().catch((err) => {
+    logger.error('api-gateway.start_failed', { error: err.message });
+    process.exit(1);
   });
 }

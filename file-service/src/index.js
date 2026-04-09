@@ -58,4 +58,7 @@ async function start() {
   });
 }
 
-start();
+start().catch((err) => {
+  logger.error("file-service.start_failed", { error: err.message });
+  process.exit(1);
+});

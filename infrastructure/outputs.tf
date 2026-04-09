@@ -1,3 +1,8 @@
+output "postgres_endpoint" {
+  description = "PostgreSQL RDS endpoint (hostname)"
+  value       = module.postgres.postgres_endpoint
+}
+
 output "redis_endpoint" {
   description = "Redis endpoint"
   value       = module.network.redis_endpoint
