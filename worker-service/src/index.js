@@ -8,7 +8,7 @@ const logger = require("@saas/shared/utils/logger");
 
 async function start() {
   logger.info("worker-service.starting");
-  await connectWithRetry();
+  await connectWithRetry({ delayMs: 5000 });
 
   // 🔥 STARTS BACKGROUND CONSUMER (NON-BLOCKING)
   processUsage().catch(err => {

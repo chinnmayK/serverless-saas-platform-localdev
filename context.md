@@ -20,7 +20,8 @@ This document captures the complete status and resolution log from the SaaS plat
 6. **Worker Service** - Background job processor
 
 ### Infrastructure
-- **PostgreSQL** (saas_db) - Primary database with Row-Level Security (RLS) and unified initialization
+- **AWS Terraform stack** - Added `infrastructure/` with ECS Fargate, Application Load Balancer, Cloud Map service discovery, and Secrets Manager.
+- **PostgreSQL** (saas_db) - Primary database with Row-Level Security (RLS), unified initialization, and RDS deployment.
 - **Redis** - High-performance rate limiting and caching
 - **MinIO** - S3-compatible object storage (Bucket: `uploads`)
 
@@ -79,6 +80,19 @@ This document captures the complete status and resolution log from the SaaS plat
 - Expanded `scripts/test-all.sh` to absorb diagnostics and token generation functions.
 - Added comprehensive coverage for RLS, cross-tenant file blocking, and circuit breakers.
 
+### ✅ Task 9: Terraform Infrastructure Integration
+**Status**: COMPLETED
+- Added `infrastructure/` Terraform stack for ECS, ALB, Secrets Manager, and RDS PostgreSQL.
+- Replaced the prior DocumentDB/mongo mismatch with RDS Postgres to align with app `pg.Pool` usage.
+- Wired full runtime secret injection for ECS tasks including `INTERNAL_SERVICE_TOKEN`, `FRONTEND_URL`, Stripe keys, and MinIO configuration.
+- Confirmed `terraform validate` passes in `infrastructure/`.
+
+### ✅ Task 10: Runtime Environment Fix
+**Status**: COMPLETED
+- Confirmed `scripts/generate-env.sh` is local/dev-only and not used by ECS runtime.
+- Ensured ECS uses Secrets Manager and task secrets instead of `.env` files for production deployment.
+- Cleaned stale Terraform root vars by removing unused `environment` and `email` entries from `terraform.tfvars`.
+
 ---
 
 ## Issues Found & Fixed (March 24, 2026)
@@ -110,6 +124,11 @@ This document captures the complete status and resolution log from the SaaS plat
 **Solution**: Refactored `redisRateLimiter.js` to prioritize `tenantId` in keys.
 **Status**: ✅ FIXED
 
+### Issue #4: ECS Runtime Env Mismatch
+**Problem**: ECS task definitions only injected partial secrets, while the app depended on extra runtime vars from Stripe, MinIO, and internal service routing.
+**Solution**: Added those keys to Secrets Manager and injected them into ECS task definitions as secrets.
+**Status**: ✅ FIXED
+
 ---
 
 ## Current Status
@@ -122,6 +141,7 @@ This document captures the complete status and resolution log from the SaaS plat
 - Circuit Breaker fallback and Bulkhead isolation
 - Request Idempotency via database keys
 - Billing usage retrieval (RLS-safe)
+- Terraform infrastructure and ECS Secrets Manager runtime validated
 
 ### ⚠️ Remaining
 - [ ] Performance benching for the two-tier rate limiter under heavy load.

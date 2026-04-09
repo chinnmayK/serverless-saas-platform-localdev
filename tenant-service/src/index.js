@@ -36,7 +36,7 @@ process.on("unhandledRejection", (reason) => {
 });
 
 async function start() {
-  await connectWithRetry();
+  await connectWithRetry({ delayMs: 5000 });
   app.listen(PORT, () => {
     logger.info('tenant-service.started', { port: PORT });
   });

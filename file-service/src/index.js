@@ -38,7 +38,7 @@ process.on("unhandledRejection", (reason) => {
 const { connectWithRetry } = require("@saas/shared/utils/db");
 
 async function start() {
-  await connectWithRetry();
+  await connectWithRetry({ delayMs: 5000 });
 
   // Wait for MinIO to be ready, then ensure bucket exists
   let retries = 10;

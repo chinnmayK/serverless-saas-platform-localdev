@@ -19,7 +19,7 @@ app.get("/health", (req, res) => {
 app.use(express.json());
 
 async function start() {
-  await connectWithRetry();
+  await connectWithRetry({ delayMs: 5000 });
   app.listen(PORT, () => {
     logger.info('billing-service.started', { port: PORT });
   });

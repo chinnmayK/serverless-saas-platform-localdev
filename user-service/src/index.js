@@ -21,7 +21,7 @@ if (cluster.isPrimary) {
   const PORT = process.env.PORT || 3000;
 
   async function start() {
-    await connectWithRetry();
+    await connectWithRetry({ delayMs: 5000 });
     app.listen(PORT, () => {
       logger.info('user-service.started', { pid: process.pid, port: PORT });
     });
