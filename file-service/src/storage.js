@@ -1,13 +1,22 @@
-const { MinioClient: client } = require("@saas/shared/utils");
+const s3 = require("@saas/shared/utils/s3");
 const logger = require("@saas/shared/utils/logger");
 
-const bucket = process.env.MINIO_BUCKET;
+const bucket = process.env.S3_BUCKET || "saas-platform-uploads";
 
+/**
+ * Ensure the S3 bucket exists. Creates it if missing.
+ */
 async function initBucket() {
-  const exists = await client.bucketExists(bucket).catch(() => false);
-  if (!exists) {
-    await client.makeBucket(bucket);
-    logger.info("file-service.storage.bucket_created", { bucket });
+  try {
+    await s3.headBucket({ Bucket: bucket }).promise();
+    logger.info("file-service.storage.bucket_exists", { bucket });
+  } catch (err) {
+    if (err.statusCode === 404 || err.code === "NotFound") {
+      await s3.createBucket({ Bucket: bucket }).promise();
+      logger.info("file-service.storage.bucket_created", { bucket });
+    } else {
+      throw err;
+    }
   }
 }
 
@@ -20,28 +29,38 @@ function buildKey(tenantId, userId, filename) {
 }
 
 /**
- * Upload a buffer to MinIO.
+ * Upload a buffer to S3.
  */
 async function uploadFile({ tenantId, userId, filename, buffer, mimetype }) {
   const key = buildKey(tenantId, userId, filename);
-  await client.putObject(bucket, key, buffer, buffer.length, {
-    "Content-Type": mimetype,
-  });
-  return { key, bucket: bucket };
+  await s3.putObject({
+    Bucket: bucket,
+    Key: key,
+    Body: buffer,
+    ContentType: mimetype,
+  }).promise();
+  return { key, bucket };
 }
 
 /**
  * Get a temporary pre-signed download URL (valid 1 hour).
  */
-async function getDownloadUrl(key) {
-  return client.presignedGetObject(bucket, key, 60 * 60);
+function getDownloadUrl(key) {
+  return s3.getSignedUrlPromise("getObject", {
+    Bucket: bucket,
+    Key: key,
+    Expires: 3600, // 1 hour
+  });
 }
 
 /**
- * Delete a file from MinIO.
+ * Delete a file from S3.
  */
 async function deleteFile(key) {
-  await client.removeObject(bucket, key);
+  await s3.deleteObject({
+    Bucket: bucket,
+    Key: key,
+  }).promise();
 }
 
 /**
@@ -54,4 +73,4 @@ function assertKeyBelongsToTenant(key, tenantId) {
   }
 }
 
-module.exports = { client, bucket, initBucket, uploadFile, getDownloadUrl, deleteFile, assertKeyBelongsToTenant };
+module.exports = { bucket, initBucket, uploadFile, getDownloadUrl, deleteFile, assertKeyBelongsToTenant };

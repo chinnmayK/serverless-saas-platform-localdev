@@ -1,7 +1,7 @@
 const multer = require("multer");
 
 // Store file in memory (buffer), not on disk
-// MinIO receives the buffer directly
+// S3 receives the buffer directly
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {

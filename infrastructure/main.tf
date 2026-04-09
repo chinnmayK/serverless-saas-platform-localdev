@@ -63,12 +63,40 @@ module "postgres" {
 }
 
 ########################################################
+# S3 BUCKET (FILE UPLOADS)
+########################################################
+
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
+resource "aws_s3_bucket" "uploads" {
+  bucket        = "${var.project_name}-uploads-${random_id.bucket_suffix.hex}"
+  force_destroy = true
+
+  tags = {
+    Name = "${var.project_name}-uploads"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "uploads" {
+  bucket = aws_s3_bucket.uploads.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+########################################################
 # SECRETS MODULE
 ########################################################
 
 module "secrets" {
   source       = "./modules/secrets"
   project_name = var.project_name
+  aws_region   = var.aws_region
+  s3_bucket    = aws_s3_bucket.uploads.id
 
   db_password    = random_password.db_password.result
   redis_endpoint = module.network.redis_endpoint

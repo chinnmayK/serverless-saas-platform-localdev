@@ -2,6 +2,10 @@ variable "project_name" {}
 variable "redis_endpoint" {}
 variable "db_password" {}
 variable "db_endpoint" {}
+variable "aws_region" {
+  type    = string
+  default = "ap-south-1"
+}
 variable "internal_service_token" {
   type    = string
   default = "internal-secret"
@@ -18,23 +22,7 @@ variable "stripe_webhook_secret" {
   type    = string
   default = "whsec_xxx"
 }
-variable "minio_endpoint" {
-  type    = string
-  default = "minio"
-}
-variable "minio_port" {
-  type    = string
-  default = "9000"
-}
-variable "minio_access_key" {
-  type    = string
-  default = "minio"
-}
-variable "minio_secret_key" {
-  type    = string
-  default = "minio123"
-}
-variable "minio_bucket" {
-  type    = string
-  default = "files"
+variable "s3_bucket" {
+  type        = string
+  description = "S3 bucket name for file uploads"
 }

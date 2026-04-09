@@ -7,5 +7,5 @@ module.exports = {
   serviceClient: require("./serviceClient"),
   circuitRegistry: require("./circuitRegistry"),
   redisRateLimiter: require("./redisRateLimiter"),
-  MinioClient: require("./minio")
+  S3Client: require("./s3")
 }

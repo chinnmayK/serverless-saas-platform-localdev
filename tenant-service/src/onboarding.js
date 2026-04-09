@@ -2,7 +2,6 @@ const bcrypt       = require('bcryptjs');
 const jwt          = require('jsonwebtoken');
 const { v4: uuid } = require('uuid');
 const { getPool }  = require('@saas/shared/utils/db');
-const { MinioClient } = require('@saas/shared/utils');   // adjusted to actual export
 const logger       = require('@saas/shared/utils/logger');
 
 const SALT_ROUNDS    = 12;
@@ -19,7 +18,6 @@ async function onboard({ tenantName, adminEmail, adminPassword, adminName }) {
 
     // 1. Create tenant
     const tenantId = uuid();
-    // Use the name for slug too for now, or generate a simple slug
     const slug = tenantName.toLowerCase().replace(/\s+/g, '-');
     
     await client.query(
@@ -28,9 +26,8 @@ async function onboard({ tenantName, adminEmail, adminPassword, adminName }) {
       [tenantId, tenantName, slug, DEFAULT_PLAN]
     );
 
-    // ✅ Set session context for RLS - allows subsequent inserts (features, users) to pass
+    // Set session context for RLS
     await client.query("SELECT set_config('app.current_tenant_id', $1, true)", [tenantId]);
-
 
     // 2. Provision default feature flags
     for (const feat of DEFAULT_FEATURES) {
@@ -59,15 +56,7 @@ async function onboard({ tenantName, adminEmail, adminPassword, adminName }) {
 
     await client.query('COMMIT');
 
-    // 5. Provision MinIO bucket for tenant (best-effort, outside transaction)
-    try {
-      await provisionStorage(tenantId);
-    } catch (storageErr) {
-      // Non-fatal — bucket can be created on first upload
-      logger.warn("tenant-service.onboarding.minio_provision_failed", { error: storageErr.message });
-    }
-
-    // 6. Issue JWT
+    // 5. Issue JWT
     const token = jwt.sign(
       { userId, tenantId, email: adminEmail, role: 'admin' },
       JWT_SECRET,
@@ -87,17 +76,6 @@ async function onboard({ tenantName, adminEmail, adminPassword, adminName }) {
   } finally {
     client.release();
   }
-}
-
-async function provisionStorage(tenantId) {
-  // Reuse the MinIO client already initialised in file-service/src/storage.js
-  // Here we just ensure the shared 'uploads' bucket exists — files are prefixed by tenantId
-  // No per-tenant bucket needed; existing bucket initialization in file-service covers this.
-  
-  // Note: If we really wanted to ensure it here, we would do:
-  // const bucket = process.env.MINIO_BUCKET || 'uploads';
-  // const exists = await MinioClient.bucketExists(bucket).catch(() => false);
-  // if (!exists) await MinioClient.makeBucket(bucket);
 }
 
 module.exports = { onboard };

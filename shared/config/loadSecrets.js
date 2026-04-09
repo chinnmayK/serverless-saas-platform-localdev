@@ -14,9 +14,6 @@ if (process.env.APP_SECRETS) {
   process.env.FRONTEND_URL           = s.FRONTEND_URL;
   process.env.STRIPE_SECRET_KEY      = s.STRIPE_SECRET_KEY;
   process.env.STRIPE_WEBHOOK_SECRET  = s.STRIPE_WEBHOOK_SECRET;
-  process.env.MINIO_ENDPOINT         = s.MINIO_ENDPOINT;
-  process.env.MINIO_PORT             = s.MINIO_PORT;
-  process.env.MINIO_ACCESS_KEY       = s.MINIO_ACCESS_KEY;
-  process.env.MINIO_SECRET_KEY       = s.MINIO_SECRET_KEY;
-  process.env.MINIO_BUCKET           = s.MINIO_BUCKET;
+  process.env.S3_BUCKET              = s.S3_BUCKET;
+  process.env.S3_REGION              = s.S3_REGION;
 }

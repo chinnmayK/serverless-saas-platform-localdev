@@ -104,7 +104,7 @@ router.delete("/:id", auth, tenantCtx, requireRole("admin", "member"), async (re
 
     assertKeyBelongsToTenant(file.storage_key, req.tenantId);
 
-    // Remove from MinIO
+    // Remove from S3
     await storage.deleteFile(file.storage_key);
 
     // Soft delete metadata from DB

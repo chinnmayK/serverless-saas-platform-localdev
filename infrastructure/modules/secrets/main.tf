@@ -28,10 +28,7 @@ resource "aws_secretsmanager_secret_version" "app_secrets_value" {
     FRONTEND_URL           = var.frontend_url
     STRIPE_SECRET_KEY      = var.stripe_secret_key
     STRIPE_WEBHOOK_SECRET  = var.stripe_webhook_secret
-    MINIO_ENDPOINT         = var.minio_endpoint
-    MINIO_PORT             = var.minio_port
-    MINIO_ACCESS_KEY       = var.minio_access_key
-    MINIO_SECRET_KEY       = var.minio_secret_key
-    MINIO_BUCKET           = var.minio_bucket
+    S3_BUCKET              = var.s3_bucket
+    S3_REGION              = var.aws_region
   })
 }

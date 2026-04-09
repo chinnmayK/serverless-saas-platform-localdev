@@ -41,16 +41,11 @@ const { connectWithRetry } = require("@saas/shared/utils/db");
 async function start() {
   await connectWithRetry({ delayMs: 5000 });
 
-  // Wait for MinIO to be ready, then ensure bucket exists
-  let retries = 10;
-  while (retries--) {
-    try {
-      await initBucket();
-      break;
-    } catch (err) {
-      logger.warn('file-service.minio_not_ready', { retriesLeft: retries });
-      await new Promise((r) => setTimeout(r, 3000));
-    }
+  // Ensure S3 bucket exists
+  try {
+    await initBucket();
+  } catch (err) {
+    logger.warn('file-service.storage_init_failed', { error: err.message });
   }
 
   app.listen(PORT, () => {
