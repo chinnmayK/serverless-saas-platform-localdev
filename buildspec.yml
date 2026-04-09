@@ -37,7 +37,7 @@ phases:
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
       ########################################################
-      # 🔥 Fetch secrets (SAFE VERSION)
+      # 🔥 Fetch secrets (SAFE VERSION) 
       ########################################################
       - echo "Fetching secrets from Secrets Manager..."
 
