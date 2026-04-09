@@ -1,3 +1,4 @@
+require('@saas/shared');
 require('./tracing');
 const cron = require("node-cron");
 const { aggregateUsage } = require("./jobs/aggregateUsage");

@@ -1,3 +1,4 @@
+require('@saas/shared');
 const cluster = require('cluster');
 const os = require('os');
 const logger = require('@saas/shared/utils/logger');

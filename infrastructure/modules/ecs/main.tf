@@ -170,56 +170,8 @@ resource "aws_ecs_task_definition" "tasks" {
       ##################################################
       secrets = [
         {
-          name      = "JWT_SECRET"
-          valueFrom = "${var.app_secrets_arn}:JWT_SECRET"
-        },
-        {
-          name      = "REDIS_URL"
-          valueFrom = "${var.app_secrets_arn}:REDIS_URL"
-        },
-        {
-          name      = "DB_PASSWORD"
-          valueFrom = "${var.app_secrets_arn}:DB_PASSWORD"
-        },
-        {
-          name      = "DATABASE_URL"
-          valueFrom = "${var.app_secrets_arn}:DATABASE_URL"
-        },
-        {
-          name      = "INTERNAL_SERVICE_TOKEN"
-          valueFrom = "${var.app_secrets_arn}:INTERNAL_SERVICE_TOKEN"
-        },
-        {
-          name      = "FRONTEND_URL"
-          valueFrom = "${var.app_secrets_arn}:FRONTEND_URL"
-        },
-        {
-          name      = "STRIPE_SECRET_KEY"
-          valueFrom = "${var.app_secrets_arn}:STRIPE_SECRET_KEY"
-        },
-        {
-          name      = "STRIPE_WEBHOOK_SECRET"
-          valueFrom = "${var.app_secrets_arn}:STRIPE_WEBHOOK_SECRET"
-        },
-        {
-          name      = "MINIO_ENDPOINT"
-          valueFrom = "${var.app_secrets_arn}:MINIO_ENDPOINT"
-        },
-        {
-          name      = "MINIO_PORT"
-          valueFrom = "${var.app_secrets_arn}:MINIO_PORT"
-        },
-        {
-          name      = "MINIO_ACCESS_KEY"
-          valueFrom = "${var.app_secrets_arn}:MINIO_ACCESS_KEY"
-        },
-        {
-          name      = "MINIO_SECRET_KEY"
-          valueFrom = "${var.app_secrets_arn}:MINIO_SECRET_KEY"
-        },
-        {
-          name      = "MINIO_BUCKET"
-          valueFrom = "${var.app_secrets_arn}:MINIO_BUCKET"
+          name      = "APP_SECRETS"
+          valueFrom = var.app_secrets_arn
         }
       ]
 

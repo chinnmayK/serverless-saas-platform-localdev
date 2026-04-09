@@ -1,3 +1,4 @@
+require('@saas/shared');
 require('./tracing');
 const express = require("express");
 const routes = require("./routes");
