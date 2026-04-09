@@ -8,17 +8,24 @@ const tenantContext = new AsyncLocalStorage();
 // ─── Primary pool — app_user with RLS enforced ────────────────────────────────
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+
+  ssl: {
+    rejectUnauthorized: false,
+  },
+
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
-  statement_timeout: 3000,
 });
 
 // ─── Auth pool — auth_user, bypasses RLS, used ONLY for login ─────────────────
 const authPool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+
+  ssl: {
+    rejectUnauthorized: false,
+  },
+
   user:     process.env.AUTH_DB_USER     || "auth_user",
   password: process.env.AUTH_DB_PASSWORD || "auth_password",
   max: 1,
