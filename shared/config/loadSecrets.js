@@ -4,6 +4,7 @@
 // each key to a top-level process.env variable.
 
 if (process.env.APP_SECRETS) {
+  console.log("APP_SECRETS:", process.env.APP_SECRETS);
   const s = JSON.parse(process.env.APP_SECRETS);
 
   process.env.DATABASE_URL           = s.DATABASE_URL;

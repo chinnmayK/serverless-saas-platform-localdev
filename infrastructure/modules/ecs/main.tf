@@ -144,6 +144,10 @@ resource "aws_ecs_task_definition" "tasks" {
           value = "production"
         },
         {
+          name  = "RUN_DB_MIGRATIONS"
+          value = each.key == "api-gateway" ? "true" : "false"
+        },
+        {
           name  = "PORT"
           value = "3000"
         },

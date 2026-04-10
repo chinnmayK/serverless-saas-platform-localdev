@@ -35,7 +35,13 @@ resource "aws_iam_role_policy" "ecs_execution_extra" {
         Effect = "Allow"
         Action = [
           "secretsmanager:GetSecretValue",
-          "kms:Decrypt"
+          "secretsmanager:DescribeSecret",
+          "kms:Decrypt",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer"
         ]
         Resource = "*"
       }

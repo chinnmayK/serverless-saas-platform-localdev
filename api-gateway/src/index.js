@@ -17,12 +17,18 @@ if (cluster.isPrimary) {
     cluster.fork();
   });
 } else {
+  require('@saas/shared/config/loadSecrets');
   const app = require('./server');
   const { connectWithRetry } = require('@saas/shared/utils/db');
+  const { runMigrationsIfNeeded } = require('@saas/shared/db/init');
   const PORT = process.env.PORT || 3000;
 
   (async () => {
     await connectWithRetry({ delayMs: 5000 });
+    
+    // 🔥 run DB setup
+    await runMigrationsIfNeeded();
+
     app.listen(PORT, () => {
       logger.info('api-gateway.started', { pid: process.pid, port: PORT });
     });

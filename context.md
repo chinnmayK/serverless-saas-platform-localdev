@@ -324,7 +324,79 @@ bash scripts/test-all.sh
 
 ---
 
-**Last Updated**: April 1, 2026 17:35 UTC  
-**Status**: ✅ ENTERPRISE READY - Extreme resilience and multi-core scaling verified.
+**Last Updated**: April 10, 2026 11:15 UTC  
+**Status**: ✅ ENTERPRISE READY - Infrastructure Topography hardened and fully captured.
 
+---
 
+## Infrastructure Topography (AWS Terraform)
+
+The platform is deployed serverlessly on AWS via Terraform. The infrastructure is located in the `infrastructure/` directory and is organized into purpose-built feature modules.
+
+### Core Architecture
+- **Compute**: AWS ECS (Fargate) for serverless container execution.
+- **Networking**: AWS VPC with Public/Private subnets. Tasks run exclusively in private subnets and pull images/updates outbound via a NAT Gateway.
+- **Data Persistence**: 
+  - **AWS RDS PostgreSQL** for primary relational schema and RLS pattern enforcement.
+  - **AWS ElastiCache (Redis)** for high-performance tenant rate-limiting.
+  - **AWS S3 Buckets** for object storage, substituting the local MinIO deployment.
+- **CI/CD**: AWS CodePipeline and CodeBuild for automated container builds and deployments tracking the GitHub repository.
+- **Security**: AWS Secrets Manager and granular IAM Roles ensure secure secrets injection without `.env` files touching the deployment pipeline.
+
+### Modules Breakdown
+
+1. **`network/` (Networking & Caching)**
+   - Provisions the foundational VPC (`10.0.0.0/16`).
+   - Configures 2 Public Subnets (ALB / NAT) and 2 Private Subnets (ECS tasks).
+   - Sets up the Internet Gateway, NAT Gateway (`aws_eip` + `aws_nat_gateway`), and respective Routing Tables to afford private tasks secure outbound web access (required for image pulls).
+   - Bootstraps Security Groups for the application cluster and the Load Balancer.
+   - Deploys the **AWS ElastiCache (Redis)** node directly into the private subnet topology.
+
+2. **`iam/` (Identity & Permissions)**
+   - **ECS Task Execution Role**: Essential for the ECS agent to pull private ECR images, decrypt execution secrets (`secretsmanager:GetSecretValue`, `secretsmanager:DescribeSecret`), and push startup routines to CloudWatch (`logs:CreateLogStream`, `logs:PutLogEvents`).
+   - **ECS Task Role**: The application runtime identity. Affords permissions for messaging mechanisms (SQS, EventBridge) and managing objects in the platform's S3 uploads bucket.
+   - **CodeBuild & CodePipeline Roles**: Grants CI/CD rights to securely pull source code, push images to ECR, and forcefully execute `ecs:UpdateService`.
+
+3. **`ecr/` (Elastic Container Registry)**
+   - Creates the private AWS image repositories to house the 5 core microservices: `api-gateway`, `user-service`, `tenant-service`, `billing-service`, and `file-service`.
+
+4. **`ecs/` (Fargate Cluster & Service Discovery)**
+   - **Cluster & ALB**: Spins up the primary ECS cluster and Internet-facing Application Load Balancer distributing Internet traffic to the API Gateway on port 80.
+   - **Cloud Map (Service Discovery)**: Sets up `internal.[project_name]` private DNS to facilitate peer-to-peer microservice routing (e.g., `http://user-service.internal.[project_name]:3002`).
+   - **Task Definitions Settings**: Configures fractional compute allocations (256 vCPU / 512 Mem), assigns AWS CloudWatch Log Groups, and binds dynamically generated URLs for inter-service communications using injected environment variables. 
+   - Uses `assign_public_ip = false` under container network definitions ensuring services remain totally sealed from direct internet exposure.
+
+5. **`postgres/` (Relational Database)**
+   - Automates the provisioning of an **AWS RDS PostgreSQL** instance (`saas_db`) deployed safely in the private subnets.
+   - Manages Postgres-specific security group schemas allowing `5432` ingress exclusively from the ECS cluster's App Security Group.
+
+6. **`secrets/` (Secrets Management)**
+   - Consolidates dynamic, generated infrastructure values (e.g., Redis endpoint, Postgres URL, generated DB passwords, and S3 credentials).
+   - Packs these values into a unified JSON blob and registers it in **AWS Secrets Manager**, which is subsequently injected as the `APP_SECRETS` dict natively in ECS avoiding plaintext leaks.
+
+7. **`cicd/` (Continuous Integration Pipeline)**
+   - Wraps the AWS CodeStar connection for seamless GitHub integration.
+   - Provisions the CodeBuild Project utilizing the locally versioned `buildspec.yml` to compile application artifacts, auto-tag Docker images, and execute rolling atomic ECS deployments natively.
+
+### Infrastructure Validation & Hardening Enhancements
+- **IAM Integrity Checks**: Ensured the ECS Execution Role dynamically supports `secretsmanager:DescribeSecret` and logging constraints to prevent silent process abandonment during task boots.
+- **Root Validation Modules**: Explicit cross-security-group validations (Egress constraints pushing from ECS to Postgres and Redis) were consolidated at the root module configuration (`main.tf`) to protect against connection string timeouts.
+- **Stateless Subnet Security**: Fully verified missing NAT & IP assignment conflicts resolving infinite "No Logs / Pending" errors after a routine `destroy` and `apply` rebuild.
+
+### 🌟 Latest Stabilizations (April 10, 2026)
+- **Database Initialization Automation**: Implemented a standalone, idempotent `shared/db/init-db.sql` paired with a JS migration runner (`runMigrationsIfNeeded`). Orchestrated execution natively ahead of the `api-gateway` worker bootup cycle (`loadSecrets` -> `connectWithRetry` -> `runMigrations`).
+- **Terraform Guardrails**: Updated ECS container definitions to pass `RUN_DB_MIGRATIONS = "true"` exclusively to the `api-gateway` node ensuring single-origin synchronous table creation during deployment.
+- **Security Group Networking Fixes**: Resolved critical "silent ECS failures" ("No Logs", task stuck Pending) and secondary DB connection loop errors by correcting the structural isolation of the overarching application security group (`app_sg`). Explicitly appended:
+  - An `egress` rule mapping to `0.0.0.0/0` (permitting necessary outbound polling to AWS ECR, Secrets Manager, and CloudWatch).
+  - An internal `ingress` rule enabling peer-to-peer microservice REST propagation securely (`self = true`).
+  - An external `ingress` capturing legitimate frontend invocations inbound from the `alb_sg` Load Balancer structure.
+
+### 🛡️ Final Safety Checklist Verified (April 10, 2026)
+- **ECS Outbound**: `app_sg` tested and verified for `0.0.0.0/0` egress padding.
+- **NAT Gateway**: Verified `private` subnet associations and `0.0.0.0/0` route pointing strictly to NAT.
+- **ECS Execution Role**: Hard-coded `ecr:GetAuthorizationToken`, `ecr:BatchGetImage`, and `ecr:GetDownloadUrlForLayer` to execution extra payload policy protecting against silent pull fatalities.
+- **CloudWatch Priority**: Confirmed module `depends_on = [aws_cloudwatch_log_group.ecs_logs]` guaranteeing no log stream orphaned.
+- **JSON Debugger**: Added temporary `console.log(APP_SECRETS)` trace inside `loadSecrets.js` to safeguard against syntax poison.
+- **Database Connection Verification**: Validated `postgresql://` protocol prefix mapping inside Secrets payload and `{ rejectUnauthorized: false }` TLS properties enforcing secured DB pool connectivity.
+- **S3 Scopes**: Evaluated `ecs_task_policy` asserting strict S3 permissions `s3:PutObject`, `s3:GetObject`, `s3:ListBucket` over `uploads`.
+- **Cloud Map Hook**: Confirmed `aws_ecs_service` registries actively bind to targeted `aws_service_discovery_service`.
