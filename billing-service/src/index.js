@@ -19,14 +19,16 @@ app.get("/health", (req, res) => {
 
 app.use(express.json());
 
-async function start() {
-  await connectWithRetry({ delayMs: 5000 });
-  app.listen(PORT, () => {
-    logger.info('billing-service.started', { port: PORT });
-  });
-}
-
-start().catch((err) => {
-  logger.error("billing-service.start_failed", { error: err.message });
-  process.exit(1);
-});
+(async () => {
+  try {
+    await connectWithRetry({ delayMs: 5000 });
+    
+    app.listen(PORT, () => {
+      logger.info('billing-service.started', { port: PORT });
+      console.log(`🚀 Service running on port ${PORT}`);
+    });
+  } catch (err) {
+    logger.error("billing-service.start_failed", { error: err.message });
+    process.exit(1);
+  }
+})();

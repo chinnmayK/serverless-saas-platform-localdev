@@ -38,22 +38,23 @@ process.on("unhandledRejection", (reason) => {
 
 const { connectWithRetry } = require("@saas/shared/utils/db");
 
-async function start() {
-  await connectWithRetry({ delayMs: 5000 });
-
-  // Ensure S3 bucket exists
+(async () => {
   try {
-    await initBucket();
+    await connectWithRetry({ delayMs: 5000 });
+
+    // Ensure S3 bucket exists
+    try {
+      await initBucket();
+    } catch (err) {
+      logger.warn('file-service.storage_init_failed', { error: err.message });
+    }
+
+    app.listen(PORT, () => {
+      logger.info('file-service.started', { port: PORT });
+      console.log(`🚀 Service running on port ${PORT}`);
+    });
   } catch (err) {
-    logger.warn('file-service.storage_init_failed', { error: err.message });
+    logger.error("file-service.start_failed", { error: err.message });
+    process.exit(1);
   }
-
-  app.listen(PORT, () => {
-    logger.info('file-service.started', { port: PORT });
-  });
-}
-
-start().catch((err) => {
-  logger.error("file-service.start_failed", { error: err.message });
-  process.exit(1);
-});
+})();

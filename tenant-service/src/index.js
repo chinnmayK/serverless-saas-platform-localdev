@@ -36,14 +36,16 @@ process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled promise rejection", { reason: String(reason) });
 });
 
-async function start() {
-  await connectWithRetry({ delayMs: 5000 });
-  app.listen(PORT, () => {
-    logger.info('tenant-service.started', { port: PORT });
-  });
-}
-
-start().catch((err) => {
-  logger.error("tenant-service.start_failed", { error: err.message });
-  process.exit(1);
-});
+(async () => {
+  try {
+    await connectWithRetry({ delayMs: 5000 });
+    
+    app.listen(PORT, () => {
+      logger.info('tenant-service.started', { port: PORT });
+      console.log(`🚀 Service running on port ${PORT}`);
+    });
+  } catch (err) {
+    logger.error("tenant-service.start_failed", { error: err.message });
+    process.exit(1);
+  }
+})();
