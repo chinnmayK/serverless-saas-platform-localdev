@@ -7,7 +7,7 @@ const { getPool } = require('@saas/shared/utils/db');
 async function ensureStripeCustomer(tenantId, email, name) {
   const pool = getPool();
   const { rows } = await pool.query(
-    'SELECT stripe_customer_id FROM tenants WHERE id = $1',
+    'SELECT stripe_customer_id FROM tenants WHERE tenant_id = $1',
     [tenantId]
   );
   if (!rows.length) throw new Error('Tenant not found');
@@ -17,7 +17,7 @@ async function ensureStripeCustomer(tenantId, email, name) {
   const customer = await stripe.customers.create({ email, name, metadata: { tenantId } });
 
   await pool.query(
-    'UPDATE tenants SET stripe_customer_id = $1 WHERE id = $2',
+    'UPDATE tenants SET stripe_customer_id = $1 WHERE tenant_id = $2',
     [customer.id, tenantId]
   );
   return customer.id;
@@ -53,7 +53,7 @@ async function createCheckoutSession(tenantId, email, name) {
 async function createPortalSession(tenantId) {
   const pool = getPool();
   const { rows } = await pool.query(
-    'SELECT stripe_customer_id FROM tenants WHERE id = $1',
+    'SELECT stripe_customer_id FROM tenants WHERE tenant_id = $1',
     [tenantId]
   );
   if (!rows[0]?.stripe_customer_id) throw new Error('No Stripe customer found');

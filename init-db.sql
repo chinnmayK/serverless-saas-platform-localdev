@@ -8,6 +8,27 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =============================================================================
+-- SECTION 0: SCHEMA MIGRATIONS (Legacy Support)
+-- =============================================================================
+-- Handle renaming of legacy "id" columns to their entity-specific names.
+-- This ensures smooth deployments where tables already exist with old structures.
+DO $$ 
+BEGIN 
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='id') THEN
+        ALTER TABLE tenants RENAME COLUMN id TO tenant_id;
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='id') THEN
+        ALTER TABLE users RENAME COLUMN id TO user_id;
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='files' AND column_name='id') THEN
+        ALTER TABLE files RENAME COLUMN id TO file_id;
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='subscriptions' AND column_name='id') THEN
+        ALTER TABLE subscriptions RENAME COLUMN id TO subscription_id;
+    END IF;
+END $$;
+
+-- =============================================================================
 -- SECTION 1: ROLE CREATION & AUTHENTICATION
 -- =============================================================================
 
