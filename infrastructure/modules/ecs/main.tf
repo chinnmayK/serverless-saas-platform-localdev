@@ -153,19 +153,19 @@ resource "aws_ecs_task_definition" "tasks" {
         },
         {
           name  = "TENANT_SERVICE_URL"
-          value = "http://tenant-service.${local.service_discovery_domain}:3001"
+          value = "http://tenant-service.${local.service_discovery_domain}:3000"
         },
         {
           name  = "USER_SERVICE_URL"
-          value = "http://user-service.${local.service_discovery_domain}:3002"
+          value = "http://user-service.${local.service_discovery_domain}:3000"
         },
         {
           name  = "BILLING_SERVICE_URL"
-          value = "http://billing-service.${local.service_discovery_domain}:3003"
+          value = "http://billing-service.${local.service_discovery_domain}:3000"
         },
         {
           name  = "FILE_SERVICE_URL"
-          value = "http://file-service.${local.service_discovery_domain}:3004"
+          value = "http://file-service.${local.service_discovery_domain}:3000"
         }
       ]
 
