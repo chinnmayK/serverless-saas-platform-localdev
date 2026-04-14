@@ -14,7 +14,7 @@ async function aggregateUsage() {
   for (const tenant of tenants.rows) {
     const tenantId = tenant.tenant_id;
 
-    // 2. Aggregate usage for this specific tenant using tenantQuery to set RLS context
+    // 2. Aggregate usage for this specific tenant using tenantQuery to set RLS context 
     const result = await db.tenantQuery(
       tenantId,
       `SELECT
@@ -30,9 +30,9 @@ async function aggregateUsage() {
 
     if (result.rows.length > 0) {
       // In a real app, we would save these results to a 'usage_aggregates' table
-      logger.info("aggregated usage for tenant", { 
-        tenantId, 
-        buckets: result.rows.length 
+      logger.info("aggregated usage for tenant", {
+        tenantId,
+        buckets: result.rows.length
       });
       totalProcessed += result.rows.length;
     }
