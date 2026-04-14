@@ -1,12 +1,11 @@
 const stripe = require('./stripeClient');
-const { getPool } = require('@saas/shared/utils/db');
+const db = require('@saas/shared/utils/db');
 
 /**
  * Create or retrieve a Stripe customer for a tenant.
  */
 async function ensureStripeCustomer(tenantId, email, name) {
-  const pool = getPool();
-  const { rows } = await pool.query(
+  const { rows } = await db.query(
     'SELECT stripe_customer_id FROM tenants WHERE tenant_id = $1',
     [tenantId]
   );
@@ -16,7 +15,7 @@ async function ensureStripeCustomer(tenantId, email, name) {
 
   const customer = await stripe.customers.create({ email, name, metadata: { tenantId } });
 
-  await pool.query(
+  await db.query(
     'UPDATE tenants SET stripe_customer_id = $1 WHERE tenant_id = $2',
     [customer.id, tenantId]
   );
@@ -27,10 +26,9 @@ async function ensureStripeCustomer(tenantId, email, name) {
  * Create a Stripe Checkout session for the Pro plan.
  */
 async function createCheckoutSession(tenantId, email, name) {
-  const pool = getPool();
   const customerId = await ensureStripeCustomer(tenantId, email, name);
 
-  const { rows: planRows } = await pool.query(
+  const { rows: planRows } = await db.query(
     "SELECT stripe_price_id FROM plans WHERE id = 'pro'"
   );
   if (!planRows[0]?.stripe_price_id) throw new Error('Pro plan price not configured');
@@ -51,8 +49,7 @@ async function createCheckoutSession(tenantId, email, name) {
  * Create a Stripe Customer Portal session (manage/cancel subscription).
  */
 async function createPortalSession(tenantId) {
-  const pool = getPool();
-  const { rows } = await pool.query(
+  const { rows } = await db.query(
     'SELECT stripe_customer_id FROM tenants WHERE tenant_id = $1',
     [tenantId]
   );
@@ -75,12 +72,10 @@ async function handleWebhook(rawBody, signature) {
     process.env.STRIPE_WEBHOOK_SECRET
   );
 
-  const pool = getPool();
-
   switch (event.type) {
     case 'invoice.paid': {
       const sub = event.data.object;
-      await pool.query(
+      await db.query(
         `UPDATE tenants
             SET plan = 'pro', plan_status = 'active',
                 stripe_subscription_id = $1
@@ -92,7 +87,7 @@ async function handleWebhook(rawBody, signature) {
     case 'customer.subscription.updated': {
       const sub = event.data.object;
       const plan = sub.status === 'active' ? 'pro' : 'free';
-      await pool.query(
+      await db.query(
         `UPDATE tenants
             SET plan = $1, plan_status = $2
           WHERE stripe_customer_id = $3`,
@@ -102,7 +97,7 @@ async function handleWebhook(rawBody, signature) {
     }
     case 'customer.subscription.deleted': {
       const sub = event.data.object;
-      await pool.query(
+      await db.query(
         `UPDATE tenants
             SET plan = 'free', plan_status = 'canceled',
                 stripe_subscription_id = NULL

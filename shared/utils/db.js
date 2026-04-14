@@ -5,30 +5,50 @@ const logger = require("./logger");
 // ─── Tenant Context Scope — Managed by AsyncLocalStorage ─────────────────────
 const tenantContext = new AsyncLocalStorage();
 
+// ─── BUG FIX #1 & #2: Build connection config from individual DB_* env vars
+//     when DATABASE_URL is absent (local Docker). Enable SSL only in production.
+// ─────────────────────────────────────────────────────────────────────────────
+function buildConnectionConfig(overrides = {}) {
+  // If DATABASE_URL is explicitly provided (e.g. AWS RDS), use it.
+  // Otherwise construct from individual DB_* vars (Docker Compose).
+  const base = process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL }
+    : {
+        host:     process.env.DB_HOST     || "localhost",
+        port:     parseInt(process.env.DB_PORT || "5432", 10),
+        database: process.env.DB_NAME     || "saas_db",
+        user:     process.env.DB_USER     || "app_user",
+        password: process.env.DB_PASSWORD || "app_password",
+      };
+
+  // BUG FIX #2: Only enable SSL in production.
+  // postgres:15-alpine (Docker) does not have SSL configured; forcing it
+  // causes "The server does not support SSL connections" before any query runs.
+  const ssl = process.env.NODE_ENV === "production" || process.env.DB_SSL === "true"
+    ? { ssl: { rejectUnauthorized: false } }
+    : {};
+
+  return { ...base, ...ssl, ...overrides };
+}
+
 // ─── Primary pool — app_user with RLS enforced ────────────────────────────────
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-
-  ssl: {
-    rejectUnauthorized: false,
-  },
-
+  ...buildConnectionConfig(),
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
 });
 
 // ─── Auth pool — auth_user, bypasses RLS, used ONLY for login ─────────────────
+// BUG FIX: authPool was inheriting host from DATABASE_URL (undefined in Docker),
+// causing it to attempt localhost instead of the postgres container.
+// Explicit user/password override the connectionString credentials in pg.
 const authPool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-
-  ssl: {
-    rejectUnauthorized: false,
-  },
-
-  user:     process.env.AUTH_DB_USER     || "auth_user",
-  password: process.env.AUTH_DB_PASSWORD || "auth_password",
-  max: 1,
+  ...buildConnectionConfig({
+    user:     process.env.AUTH_DB_USER     || "auth_user",
+    password: process.env.AUTH_DB_PASSWORD || "auth_password",
+  }),
+  max: 5,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });
@@ -63,16 +83,14 @@ async function connectWithRetry(options = {}) {
 }
 
 // ─── Query Logging Wrapper ──────────────────────────────────────────────────
-const originalQuery = pool.query;
+const originalQuery = pool.query.bind(pool);
 
 pool.query = async (...args) => {
-  logger.debug('DB Query', { query: args[0], params: args[1] });
-
+  logger.debug("DB Query", { query: args[0], params: args[1] });
   try {
-    const result = await originalQuery.apply(pool, args);
-    return result;
+    return await originalQuery(...args);
   } catch (err) {
-    logger.error('DB Error', { error: err.message, query: args[0] });
+    logger.error("DB Error", { error: err.message, query: args[0] });
     throw err;
   }
 };
@@ -89,7 +107,7 @@ const query = (text, params) => {
 // ─── Auth-only query via auth_user (bypasses RLS, narrow SELECT only) ─────────
 const authQuery = (text, params) => authPool.query(text, params);
 
-// ─── Tenant-scoped transaction — SET LOCAL scopes setting to transaction ───────
+// ─── Tenant-scoped transaction — set_config scoped to transaction ─────────────
 async function withTenant(tenantId, fn) {
   const client = await pool.connect();
   try {
@@ -113,7 +131,6 @@ async function withTenant(tenantId, fn) {
 async function tenantQuery(tenantId, text, params) {
   const client = await pool.connect();
   try {
-    // We wrap in a transaction so set_config(..., true) is safe and scoped
     await client.query("BEGIN");
     await client.query(
       "SELECT set_config('app.current_tenant_id', $1, true)",
@@ -130,19 +147,16 @@ async function tenantQuery(tenantId, text, params) {
   }
 }
 
-/**
- * Returns the primary database pool.
- */
 function getPool() {
   return pool;
 }
 
-module.exports = { 
-  query, 
-  authQuery, 
-  withTenant, 
-  tenantQuery, 
-  tenantContext, 
+module.exports = {
+  query,
+  authQuery,
+  withTenant,
+  tenantQuery,
+  tenantContext,
   pool,
   getPool,
   connectWithRetry,

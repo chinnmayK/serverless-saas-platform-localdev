@@ -184,3 +184,20 @@ Logs in an existing user and returns a JWT token.
 - **Headers:** `Content-Type: application/json`
 - **Body:** raw Stripe webhook payload.
 - **Expected:** `200 OK` (Depends on the payload correctness, typically tested via Stripe CLI or mocked data).
+
+---
+
+## 7. Troubleshooting
+
+### 500 Internal Server Error during Onboarding
+If you receive a 500 error when hitting `POST /api/onboarding` and your service logs indicate a column name issue (e.g. `column "tenant_id" of relation "tenants" does not exist`), this means your ECS database schema is out-of-sync with the current codebase expectation of `tenant_id`.
+
+**The Fix:** 
+The platform is transitioning from generic `id` columns to `tenant_id` and `user_id` for clarity. To resolve this against an existing database, run the following SQL migration on your RDS instance:
+```sql
+ALTER TABLE tenants RENAME COLUMN id TO tenant_id;
+ALTER TABLE users RENAME COLUMN id TO user_id;
+ALTER TABLE files RENAME COLUMN id TO file_id;
+ALTER TABLE subscriptions RENAME COLUMN id TO subscription_id;
+```
+If your deployment pipeline doesn't automatically execute `init-db.sql` against existing databases, you will need to apply this schema migration manually using a tool like pgAdmin or `psql` connected to your AWS RDS database.

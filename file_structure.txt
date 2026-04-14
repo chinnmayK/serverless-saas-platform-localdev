@@ -1,0 +1,878 @@
+.
+|   .dockerignore
+|   .git
+|-- |   COMMIT_EDITMSG
+|-- |   config
+|-- |   description
+|-- |   HEAD
+|-- |   hooks
+|-- |-- |   applypatch-msg.sample
+|-- |-- |   commit-msg.sample
+|-- |-- |   fsmonitor-watchman.sample
+|-- |-- |   post-update.sample
+|-- |-- |   pre-applypatch.sample
+|-- |-- |   pre-commit.sample
+|-- |-- |   pre-merge-commit.sample
+|-- |-- |   pre-push.sample
+|-- |-- |   pre-rebase.sample
+|-- |-- |   pre-receive.sample
+|-- |-- |   prepare-commit-msg.sample
+|-- |-- |   push-to-checkout.sample
+|-- |-- |   sendemail-validate.sample
+|-- |-- |   update.sample
+|-- |   index
+|-- |   info
+|-- |-- |   exclude
+|-- |   logs
+|-- |-- |   HEAD
+|-- |-- |   refs
+|-- |-- |-- |   heads
+|-- |-- |-- |-- |   main
+|-- |-- |-- |   remotes
+|-- |-- |-- |-- |   origin
+|-- |-- |-- |-- |-- |   HEAD
+|-- |-- |-- |-- |-- |   main
+|-- |   objects
+|-- |-- |   00
+|-- |-- |-- |   3f7add7efa0c2813941d4ef60fbd516bf92255
+|-- |-- |-- |   7beef6ef71313486566b7c4be2a21d605a5cd7
+|-- |-- |   01
+|-- |-- |-- |   2c1be63356ac1f92c99168743cda5aa64cd21d
+|-- |-- |-- |   7f173ae9d21fb7760a9ef38a3a367e34b91b86
+|-- |-- |-- |   cb824ae8706d4fbca6963b43a404e8f002a74e
+|-- |-- |   02
+|-- |-- |-- |   5007570d5f2bb3f79ae063416b567dfea626f2
+|-- |-- |-- |   b6e05cee829fae64e5b4719583cf9ecaf0520b
+|-- |-- |   03
+|-- |-- |-- |   30b9835153bcd500726d2b9fc7e753aa423e73
+|-- |-- |   04
+|-- |-- |-- |   51f46c49b2fd6c924d2fc51ad24404c99a64ab
+|-- |-- |-- |   d8702e168fd432ace9bcca646e803195cf30a8
+|-- |-- |   05
+|-- |-- |-- |   af765a3a907abd2f5d9bb8d5043575ce1292b7
+|-- |-- |-- |   d3b3c0f15eb84c59edb5ed3ae82ca69ca9697b
+|-- |-- |-- |   e6381b7a8d3bc8600a754b64c06c268c503c30
+|-- |-- |   06
+|-- |-- |-- |   18899770d4350d6574c2405026e3a082062523
+|-- |-- |-- |   ab2922e6877dc2f5d8450217f4c735d04623ff
+|-- |-- |-- |   be31f02b0a9acda6a51af95270e8cdbd46116c
+|-- |-- |   08
+|-- |-- |-- |   611b4c0edf704c15346667809fa9d43cf99321
+|-- |-- |   09
+|-- |-- |-- |   7dfe76c631d401c38747a6f3d0b12dd8e04e32
+|-- |-- |   0b
+|-- |-- |-- |   1090412d1c5e494626257e35d1d2572f462c18
+|-- |-- |   0c
+|-- |-- |-- |   7cc520416c74ec9a989b7460632ce2d5496fbb
+|-- |-- |   0e
+|-- |-- |-- |   b75f99f15a384cc53f165bc071db415b3a2acf
+|-- |-- |-- |   c0328218120c95e30c41a80d6478f3d1b8e03d
+|-- |-- |-- |   cd891a156c7937efb1a204f3d640805f594a34
+|-- |-- |   10
+|-- |-- |-- |   0ab1d9698aa17e697a10564a8c7aa49719eaa4
+|-- |-- |-- |   249eae241b1e12ad269ffe258ddec1673c73fe
+|-- |-- |-- |   77f1cf81f70450beb64b625ba3417c82260852
+|-- |-- |-- |   8a138f65d53678bf33d94d7d93db9e7c504998
+|-- |-- |-- |   ac1123f5198c3461f5293bd4ed5a8b01abd5ef
+|-- |-- |   11
+|-- |-- |-- |   c2644135414dc6c1242844daded52ed2650dde
+|-- |-- |-- |   dc751e3ea453ade6dff0e5c5a3729bc39d5fa3
+|-- |-- |   13
+|-- |-- |-- |   6ce636c81d1ebf3f9079f56104015bcd1e1190
+|-- |-- |-- |   d35fa881aab10c164301733a0ec47c29fe0980
+|-- |-- |-- |   e8505cba1ce70b4e859ac24adff34d7edee06c
+|-- |-- |-- |   fcdc15ceda5a5c2ef0cb97585226b4585e4b0a
+|-- |-- |   14
+|-- |-- |-- |   3225bde9a6d29f5c3c55b02dd8bedcc31384a1
+|-- |-- |-- |   eb749da2f31fe8cd1353aca1c0167369ca408d
+|-- |-- |   15
+|-- |-- |-- |   1f72e92482dab1bbaea9305c04bf642f681949
+|-- |-- |-- |   36e7b426aceba0e37f38576abfecbe29d031c2
+|-- |-- |-- |   9d3b74f4aaa04d77de25f10498f9812ca16100
+|-- |-- |-- |   bcd151d4bff6ad36b29a6b585d6603066d02cb
+|-- |-- |   17
+|-- |-- |-- |   091e6c402ba3fbb93fd6b44365cf51666ae99c
+|-- |-- |   19
+|-- |-- |-- |   9224271ee96b484dc7d21322e87decd0051bd9
+|-- |-- |   1a
+|-- |-- |-- |   531b21e6e4089878f225bf4a5ae184ef59ccc9
+|-- |-- |   1b
+|-- |-- |-- |   44da0f56f3d32aeae1907d8ad0e3214bba3ce3
+|-- |-- |-- |   51e156bb505c0cd3770b3e76cc1558593d1e41
+|-- |-- |   1d
+|-- |-- |-- |   774db6f40ae05e86458a98a9a12bdf6aed8660
+|-- |-- |-- |   b629c26ce0454ccee3cf20838188597711c8cb
+|-- |-- |   1e
+|-- |-- |-- |   39e59203932e010e8463c735550f0aaa41540f
+|-- |-- |   1f
+|-- |-- |-- |   09bab717f31863801c9a86762a157a8243bc17
+|-- |-- |   20
+|-- |-- |-- |   4d7a662779d670e7002818b44f17077fcbbd77
+|-- |-- |   21
+|-- |-- |-- |   5e33f09c6cca98e183ee6c1219c3efb42b6500
+|-- |-- |-- |   85b251fea58c0c1d04eb3ba9e42aed6d7621d7
+|-- |-- |-- |   a8fd3ed7ac0acbe3a1a65343de1cd0647f6c26
+|-- |-- |   22
+|-- |-- |-- |   46a783f2e5657a2ce3aa83e6a13a01a730cad4
+|-- |-- |   23
+|-- |-- |-- |   1e05c68ac8ca533df4ee9734d55d28a03a9d45
+|-- |-- |-- |   fff2ced41abe3f70667b6c4c76679a97cd3921
+|-- |-- |   25
+|-- |-- |-- |   34176fffa2821c8bd39c58175060c466b852cf
+|-- |-- |-- |   4b24fa95bb1457cadc7a8eab4f3832d8efe6c6
+|-- |-- |-- |   7a42f56d8e5c827037175379d59ead9558d27c
+|-- |-- |-- |   9374b7b4596c3f646fd0759f1c93e0b65385a9
+|-- |-- |   26
+|-- |-- |-- |   7ceaa69774e02618659691cf69c748c4c6af4c
+|-- |-- |   27
+|-- |-- |-- |   4366c2bb5484794d5931702a91b5bbaca167d9
+|-- |-- |-- |   8cf362c268b65f64e735ea9d2e56b572621ee9
+|-- |-- |-- |   bd73b0fb1ab15b197cb75fec7c14a628789ee3
+|-- |-- |   28
+|-- |-- |-- |   02881b47f04ec4952220cbd219e605d5f9f009
+|-- |-- |-- |   a93f9d9842ddc158a403d7d8141e14eb5dae8e
+|-- |-- |   29
+|-- |-- |-- |   00bc53425b286b1578f07ebdd6701c17ff80e1
+|-- |-- |-- |   2862ee065cfed010841c0c2b4b9c1f219b9cf0
+|-- |-- |-- |   7dac6f63a8c6f32ebfacc2f5b145324ef71378
+|-- |-- |   2a
+|-- |-- |-- |   d92f1e853aec4d024919cd46567f3e4fec4d5a
+|-- |-- |   2b
+|-- |-- |-- |   58c0fdd5516df83aae8417be21abd3b4187f4f
+|-- |-- |-- |   eb0b2655a31ba1d884080d8d639d941e4e4749
+|-- |-- |   2c
+|-- |-- |-- |   19f70079a4ba62539d3d54fc797985377a657c
+|-- |-- |   2d
+|-- |-- |-- |   166d73b0bc3c384002793849145fec9f44e440
+|-- |-- |-- |   f8454dc1af49d65198959aabc38ed8e5885618
+|-- |-- |   2e
+|-- |-- |-- |   3bfabf37a8f2975030612f9e52a72b2bd13f12
+|-- |-- |   30
+|-- |-- |-- |   e96b62dc2fccfbaeff8eb8c2eb727e953406c5
+|-- |-- |   31
+|-- |-- |-- |   0882023b8bb057dd9040e07128ffbe45709ce1
+|-- |-- |-- |   200b51a0d9c9db7520ec70b3cedba55aaede96
+|-- |-- |-- |   29520bfc9f5e2c0be6cbed500d0f69ea388475
+|-- |-- |-- |   74738cace7dd7b193093f8096139151d0ddef0
+|-- |-- |-- |   c716f17decbe43666bcc2c2059536cd06026fd
+|-- |-- |   32
+|-- |-- |-- |   a134ab20ee629edd8b3ce6d7fb56673f56df6b
+|-- |-- |   33
+|-- |-- |-- |   7cfa30160e528439c72709cddb20c43843d9ae
+|-- |-- |-- |   ae91c8d64acd10f6852e94e7fc5c013697fdd2
+|-- |-- |   34
+|-- |-- |-- |   f8943d13b7b2df33fba9c4864aad0e6ae5c435
+|-- |-- |   35
+|-- |-- |-- |   0856a6a644e13a1376bbb600403fc17223bf7c
+|-- |-- |-- |   4c14f0c512cbf5a9dff4dfc2d1890956d0fcc1
+|-- |-- |   36
+|-- |-- |-- |   dfeee23a5d781fd54415b93c567a03e1170856
+|-- |-- |   37
+|-- |-- |-- |   e1fddca8877dd05900ef42a6e7b506c53d94dd
+|-- |-- |-- |   e929d20c29a54190153a3da4e3fda6519d961d
+|-- |-- |   38
+|-- |-- |-- |   68743f7aeb833773f9a8e66455618ec7c12a94
+|-- |-- |-- |   7c375c4990270ae833a03bf3c635f1d30de505
+|-- |-- |   39
+|-- |-- |-- |   0a0c71d65ab059630c452685c522329aa40ed3
+|-- |-- |   3a
+|-- |-- |-- |   9a9731d21f185185574a216273ba000b84963a
+|-- |-- |-- |   fb14779277f6d00a69de3147414f1a67ff0077
+|-- |-- |   3c
+|-- |-- |-- |   3190fc8cd11b9c1f18a219aa279835c998586f
+|-- |-- |   3d
+|-- |-- |-- |   0976437767192d3321dcba9dcb88087f77fce9
+|-- |-- |   3e
+|-- |-- |-- |   03b4ac557da41ec51491c4eb6fe91910e4ba47
+|-- |-- |-- |   2e05a18995bfec68fc1c19052fecce40d0aa28
+|-- |-- |-- |   3bf8b2963956dccc4972dac1c184778fbf2242
+|-- |-- |-- |   5927ec241e6837af8927ab591e6adb56e21b78
+|-- |-- |-- |   f93ba08efd40c5e46ae06e5a9b243626c2cfce
+|-- |-- |   3f
+|-- |-- |-- |   1f272b96f7b8082d04971a68bf611c9a8caacd
+|-- |-- |   40
+|-- |-- |-- |   cfec85735cd4d6c2a15331f11b71479ac1b2bd
+|-- |-- |   41
+|-- |-- |-- |   29c3e94534858f2c8561fbfeb86fab6f3e359e
+|-- |-- |-- |   6432d49753cffa5f10ab05c7c71caa98101ec9
+|-- |-- |   42
+|-- |-- |-- |   357006ee0fd3c1795c5487ec5e4fe335a97622
+|-- |-- |-- |   648392effe2601c1a17798368e041b0bc407d8
+|-- |-- |   43
+|-- |-- |-- |   42ed9c418cce0777325aa4acf58650a6133b18
+|-- |-- |-- |   9040f0140ab1c56fbfc12a3677ba14ff03339d
+|-- |-- |   44
+|-- |-- |-- |   4b2bb8e41b4ce8ede772e0a502699e8aa0d6c0
+|-- |-- |-- |   7f1ec69b9f5f77f3c6e4fb8454af4293c5337a
+|-- |-- |-- |   8d905b0598c69134dff238ad8f869c84981334
+|-- |-- |   45
+|-- |-- |-- |   12e45dc19949deefcf5ea6e31269645c4734b0
+|-- |-- |-- |   ecba5e571985b5117b53072ac8266219890797
+|-- |-- |   47
+|-- |-- |-- |   1685e620b35063a0687645f4c41bbf0834971e
+|-- |-- |-- |   1ef0648c0ba527191ded3feee5df4b9a666965
+|-- |-- |-- |   5d8147e549965ca62b7b88a81b6ddbdcb7f2ee
+|-- |-- |-- |   98c2430ed0b145bde236fcdb35ada0408bb7be
+|-- |-- |-- |   b550d769088da942aef5c659300c06b8aaa1ff
+|-- |-- |   48
+|-- |-- |-- |   60de0daeebb2f1ee2f04273c7f044fd70058a2
+|-- |-- |-- |   e3f209ee3b17680e16f5c514487a383c496e88
+|-- |-- |   49
+|-- |-- |-- |   e5a1fcb45ae5babb9d5ae2c726e071dbaa0f0b
+|-- |-- |-- |   f750635cb672510fb51d86559df1d3963ff973
+|-- |-- |   4a
+|-- |-- |-- |   cfb4d31f561710ed8906fdf8d25a4ecfe5e637
+|-- |-- |   4b
+|-- |-- |-- |   97242fbdfb6d540336a8fbc4e6fdabe45a6c8b
+|-- |-- |-- |   a7cae4e26f767449d83dce936b212f4cfb966b
+|-- |-- |-- |   f3b6cc68177ef0aa0d3ec121e19ff545f403b4
+|-- |-- |   4d
+|-- |-- |-- |   5dcbd93785de77670f77bbdafef1712be68187
+|-- |-- |-- |   b923e2c01b430a60e15a486b8bb1ad2c4ed33b
+|-- |-- |-- |   c9754a6ead357f54479372e2c06193625d75d7
+|-- |-- |   4e
+|-- |-- |-- |   28ee85bf6196721535424f9013ee840d38ffd8
+|-- |-- |-- |   b003353e374b9388a47f51107215450b912826
+|-- |-- |   4f
+|-- |-- |-- |   16a805633d433edc09a7c1765884b723e8063d
+|-- |-- |   50
+|-- |-- |-- |   1e72285aa8fedaa3a134600894b5501214909b
+|-- |-- |-- |   29996ffcc859fb8effdb14ab8d137eb1267a2a
+|-- |-- |   51
+|-- |-- |-- |   4dc79b7e1d4c6d829d3ba7344303ef2347586c
+|-- |-- |-- |   a44661d355ac98f8f47d422b60c243f3e5d95f
+|-- |-- |   52
+|-- |-- |-- |   064a1867da18476f0ff0d672f2abf3f958d181
+|-- |-- |-- |   3d99c142e4beaa48c5c078cfd15d16482d08d0
+|-- |-- |   53
+|-- |-- |-- |   583fe5170175e6eb50cfaec3fd593b2977c8d4
+|-- |-- |-- |   bb7e60782b3149ad3f6adfa9cd75263e2a257c
+|-- |-- |   54
+|-- |-- |-- |   796d35b2ae9d740aad096b6b0b40552e25846c
+|-- |-- |   55
+|-- |-- |-- |   1ceef62dcc1d3d414a538f7a8373771169f862
+|-- |-- |-- |   2eb54da34f5ea7e7c031f971f9461bb15c3fdc
+|-- |-- |   56
+|-- |-- |-- |   884747063629296596330207ebfd74b1b7b9cf
+|-- |-- |   57
+|-- |-- |-- |   89e539b3c1975b2af39412d0188068a5ceb9fe
+|-- |-- |-- |   9424f11ee170ab26a5b8643e54b069f480be80
+|-- |-- |   58
+|-- |-- |-- |   7cc19e7d4f4bcd44ec30b2f5c585fb760c7a58
+|-- |-- |   59
+|-- |-- |-- |   b9ce47259d1a8e1bd821afbbd8b9835a6307bf
+|-- |-- |-- |   f449d1b9e9aad82922e2cfe0b64463a7ff9ec8
+|-- |-- |   5a
+|-- |-- |-- |   8dac33d580f143a6aeac0717ed0534e4d6c2e7
+|-- |-- |-- |   8fe268d6d8ce441a3041a50a2c91cea5d63a7f
+|-- |-- |-- |   a573108ca079fc57711f0e69de96906ef413d4
+|-- |-- |-- |   b756e0683abd51a08231145874194e45b9b940
+|-- |-- |   5b
+|-- |-- |-- |   882f48027a6468ad2f2e94d92e94b125066c37
+|-- |-- |-- |   c58724a26b77a16741a5460016fb7ab4e9d821
+|-- |-- |-- |   cc33b7fdff82afe6c4dc26ba96b0cc478535d8
+|-- |-- |   5c
+|-- |-- |-- |   6009b8dc863e3faf3f6be8bb8209083840804e
+|-- |-- |-- |   83050577584a1719e52fb9646d42705f1a1646
+|-- |-- |-- |   83105447dda6f555032b6a6c40d43468ca5cd9
+|-- |-- |   5d
+|-- |-- |-- |   ea4346269e892585ed5e456f52c32a4c912db4
+|-- |-- |   5e
+|-- |-- |-- |   f75fe51f35e689678ee57fb58f500532860199
+|-- |-- |   5f
+|-- |-- |-- |   4029f70bd9fd8716c4f9236fbc16935664e06d
+|-- |-- |-- |   96c49b65fd62075d1e7831a4b8bba9e427fbf9
+|-- |-- |   60
+|-- |-- |-- |   29e7430af15f6c4df401277c3f6ef9ae2d9b0b
+|-- |-- |-- |   5517a5183623660460092b8e1c3bff5a34fc01
+|-- |-- |   61
+|-- |-- |-- |   4830cccb9eeca6e6e42d764235f1411cdeda80
+|-- |-- |-- |   8c5b6277ac6789d2b1b3b45e7a6a25b182a435
+|-- |-- |-- |   9f716f57a25f1b1d9ff26c3f2478ff1a7a826a
+|-- |-- |-- |   fd26818b20887509e7b10784950c5dc7bdb3d8
+|-- |-- |   62
+|-- |-- |-- |   014c421c6c06ce0d2025795a90a160bc21f7f5
+|-- |-- |   64
+|-- |-- |-- |   eef7cfd728f2bd0660fa29d41826b4cdbd4855
+|-- |-- |   65
+|-- |-- |-- |   40ad392f0d16c00422c2496a1f31df99ab78cc
+|-- |-- |   66
+|-- |-- |-- |   0003702b69f2a3939fc7f1938ee0285003c64e
+|-- |-- |-- |   7396f61c6612507b541271951e36a1edf7b086
+|-- |-- |-- |   83b4fb8f2f8f8904cb5937e7e2c50252ba24a9
+|-- |-- |-- |   8c2bae8f20f973d4179e91426b72f96e9a206f
+|-- |-- |-- |   a4fc1c50737cc7905c7ecef47b5eaafc12df30
+|-- |-- |   67
+|-- |-- |-- |   292ff1289eb1896fd55a56ea2196142d841449
+|-- |-- |-- |   674f2c64f2eed6c4b8a593b80d7199575554bd
+|-- |-- |   68
+|-- |-- |-- |   6bfb3464d65eec0e8ed7849b25907ffb3c6788
+|-- |-- |   6a
+|-- |-- |-- |   a1fd3328cacbe6dda1044b749ed51312d3c440
+|-- |-- |-- |   be265a197502ce5ec9b686442b82ffcad01332
+|-- |-- |-- |   df6cf423840dff57900f23e435c9beebec8861
+|-- |-- |   6b
+|-- |-- |-- |   65fc4da4fcf6d26f3c53a24b42b832bf57a5ec
+|-- |-- |-- |   8805f2611243b099defd286f1d7f47e59c75ef
+|-- |-- |   6c
+|-- |-- |-- |   bef10e4ac8f9bd67e393eb38dd5956b45ea1bc
+|-- |-- |-- |   e45a69631ec154b94c9c8c7d6080c5e9ee0f8f
+|-- |-- |   6d
+|-- |-- |-- |   218db74483abcb5a2d21948df89ae83cb9709c
+|-- |-- |   6e
+|-- |-- |-- |   7e84a476327e0e48aba55827fd2d80458ef957
+|-- |-- |-- |   b7f1aeb43b6ddee9950c697edfb85680fe41e1
+|-- |-- |-- |   db6db47355ebbad37b00ac35ac02bdf3d89729
+|-- |-- |-- |   ed0557999168197212993bd7cf2db46a2b0b57
+|-- |-- |   6f
+|-- |-- |-- |   1b73f389d33001f96063ae0ac8f8ed62263381
+|-- |-- |-- |   48e3c0efb32abfbd8c3301ed203d20d601f3b4
+|-- |-- |-- |   52cf2f592166931e61974d5725b695358e468f
+|-- |-- |-- |   fca5cc65e49d0ff004263f7b20e3b890b315f6
+|-- |-- |   70
+|-- |-- |-- |   292b2ec0958d3afa5295f38f26a12545835a55
+|-- |-- |-- |   5011735b514d2e24fa4f3f4ec12ccf0510d5b1
+|-- |-- |-- |   ed3b52eaa3917577faca582a514363c60d2a2f
+|-- |-- |   71
+|-- |-- |-- |   7a12258c83f25c02a6b3749ed3e69d82ada3de
+|-- |-- |   72
+|-- |-- |-- |   3ca15b591c3fb79724621d3c79d7ac4813e327
+|-- |-- |-- |   8303c6975cfe985006adf29b8e3b30394bb417
+|-- |-- |   73
+|-- |-- |-- |   2e1e38cf2191c6936402782f99a3f7232c17d3
+|-- |-- |-- |   e7617a3bdd66141f3059614d0b9055534671d2
+|-- |-- |   75
+|-- |-- |-- |   af6c60d2b8e9019271dcb9eb1e301ee87a701e
+|-- |-- |-- |   dde237535c05cb49270068a7b9cc4f0b1e9c7b
+|-- |-- |-- |   f21babd2d6e86f5419070db421d7c3a249fc5f
+|-- |-- |   76
+|-- |-- |-- |   eeaf59f76933921b2366e5618360fb3063cb81
+|-- |-- |   77
+|-- |-- |-- |   87602aac2702327cc0ae46078b86486cf7a18f
+|-- |-- |   7a
+|-- |-- |-- |   05fa5bdb0f3bee8421c6f07a7b6bab53b3df20
+|-- |-- |-- |   7375584ce5820b49b4be7bc4b582edfdff75b8
+|-- |-- |   7b
+|-- |-- |-- |   0ea15641d42178e25113e6157fcb4351385d69
+|-- |-- |-- |   c2298deb6e1ffd41230bf3ef9bd92309982564
+|-- |-- |   7c
+|-- |-- |-- |   9e3423ac76b7755a3f0fd8e4b9e9518ef6fc10
+|-- |-- |   7e
+|-- |-- |-- |   d5878090a13c7ce3074ec66e381dd427033790
+|-- |-- |   7f
+|-- |-- |-- |   720d1bb73cf560ccfe26ba706c536c89d3e717
+|-- |-- |   80
+|-- |-- |-- |   082bb9f903c2590f63b09d09e7666378c6461b
+|-- |-- |   82
+|-- |-- |-- |   73e0f87c430e6f854fda3646eaf0972c833cb6
+|-- |-- |   83
+|-- |-- |-- |   040fb1758bbc613d62f2407ecfcb62cc3560d1
+|-- |-- |-- |   b8ff284fa9497bb96595577d0d00a8c99fad2e
+|-- |-- |-- |   c625ccaece27251516807bc7040a6f7b5077c2
+|-- |-- |   85
+|-- |-- |-- |   d19738b9ee208263134d61b9249fa223bd6e6b
+|-- |-- |-- |   ed8eb968e04187a7f47fe0ceada0fa25e33c12
+|-- |-- |   86
+|-- |-- |-- |   46a64fb320368df6f6e2085fbd14a8b46310c0
+|-- |-- |-- |   7bd62b2e06d8af06fddc771d74414e083bddd2
+|-- |-- |-- |   e14cf6527ac82d076d9ed749961b18848d4235
+|-- |-- |   87
+|-- |-- |-- |   86d1bb4c4fddaf58b4f94f80946746a664c368
+|-- |-- |   88
+|-- |-- |-- |   bb55f37e7337798d3cdc221856cc4b63b0bc56
+|-- |-- |-- |   eea07cb4bc7bd4d1c17f3fc7285015085aaa55
+|-- |-- |   89
+|-- |-- |-- |   93e0bb2291577e596180715c8ed7d3022c42c4
+|-- |-- |-- |   abc6c0a33a3c8c9093073b6894fbb0d3084d36
+|-- |-- |-- |   af922e948e7fa36ebc6289bc2f5a324dcfee5c
+|-- |-- |   8b
+|-- |-- |-- |   ae6b98772f61261f559cebf06494eec53c13fd
+|-- |-- |   8c
+|-- |-- |-- |   b2e7bed720fb2b10c8978443f00924a026f19d
+|-- |-- |   8d
+|-- |-- |-- |   932fb5c0e9036fedc78cf95e6b21bf7d5cf4d3
+|-- |-- |   8f
+|-- |-- |-- |   08bae44d18d928ee231ea1071a9429b47c0c75
+|-- |-- |-- |   185f27823cd695b36c16393b0d42be82edf538
+|-- |-- |   90
+|-- |-- |-- |   e3a843cd1a0227360a0e6baf517eb4a1ebce2b
+|-- |-- |-- |   eb469b955d879fdf6ae8af7fca62dad265d96e
+|-- |-- |   91
+|-- |-- |-- |   85304d4c4cce14f4d96a7be60883c5dd7824f1
+|-- |-- |-- |   c7c591b1504ea645833b85eb3391c05288a2e1
+|-- |-- |   95
+|-- |-- |-- |   1b58976d7c2b148e3fa275eccf85178566e5fe
+|-- |-- |   96
+|-- |-- |-- |   420c45664a8b2b66502496c7aa069d3114823f
+|-- |-- |-- |   4920875cf654265c94220e1cc5b8648968bf11
+|-- |-- |-- |   716c01fbcca53e315ba686b47390cf12c42856
+|-- |-- |   97
+|-- |-- |-- |   68b32c10e212097444aa97344d2c5c5e37b5c5
+|-- |-- |-- |   852350c8e3d2ab0c019c403d69dac4dd999886
+|-- |-- |-- |   a7148e0edde5014e28b428646497413b4c9f6d
+|-- |-- |   9a
+|-- |-- |-- |   44ce3fa701a1eaa1bd347e50d0facd6e1816e4
+|-- |-- |-- |   785651c90ba701ac6843d9bf948fdf567f9d55
+|-- |-- |-- |   9f1da392423fa9673fd26cbbc61b44dcb4bf2a
+|-- |-- |   9b
+|-- |-- |-- |   a236ac0fe95f8920378b0475ee9bc03f1df687
+|-- |-- |-- |   df8bad38260ba5fcf5b8baa17397c7a2e52342
+|-- |-- |-- |   f3ce128896bb49866b2ada88fdac6861581fa4
+|-- |-- |-- |   fbbe4ca7727d184da9c3a92fcd1bc122b81c0f
+|-- |-- |   9d
+|-- |-- |-- |   98b9a95c59dec06eac1f92cd61584eb514dff5
+|-- |-- |   9e
+|-- |-- |-- |   1e2976c26c90c8a33a234592555d4cf2d798b8
+|-- |-- |-- |   8dd59d1f5e981b1e5aa45632435fc789463aa2
+|-- |-- |-- |   f7fa578dcc2fe0d850b3ce2e39c562c1b1ebae
+|-- |-- |   9f
+|-- |-- |-- |   357405fcf7d25f3b90c20b578139cf1889e77d
+|-- |-- |-- |   8fa0980d7dfefe4dcecfde6a08d18208d1aa65
+|-- |-- |   a0
+|-- |-- |-- |   44e7d3c72b7dc32e782ab267a6aac6571391af
+|-- |-- |-- |   54b63b261a78a415c6d965f7555ee9dee00ed2
+|-- |-- |-- |   c980417cd8d37e15810e5b6aeb7323a46c668c
+|-- |-- |   a1
+|-- |-- |-- |   7b5b86a1a93a01111acc400a92c30caae7e281
+|-- |-- |   a2
+|-- |-- |-- |   b341021c3b2de3bb99395cc6cb88d6923e1a1b
+|-- |-- |-- |   c6917cd0f28a20869f7cd27695de8e01379013
+|-- |-- |-- |   fdcb4004e9d2a45f304e60fa77f568ce0c163d
+|-- |-- |   a3
+|-- |-- |-- |   c1187a258c245fb55431ca5d9d2c148ca6b4b8
+|-- |-- |   a4
+|-- |-- |-- |   8e9326349f7369f707062d17e013bd68dbb7bf
+|-- |-- |   a5
+|-- |-- |-- |   1ea7a47f0b90e514e74fe3270909230bff69a7
+|-- |-- |-- |   641e0919c0d3be81580aa14dceba60eaf939da
+|-- |-- |   a6
+|-- |-- |-- |   607772320f15ee8b973b8edabf6d1ae1c6b21e
+|-- |-- |-- |   bc5695241d118e1732daf8c4dbe9d2acded9f1
+|-- |-- |   a8
+|-- |-- |-- |   0511d3893254a543cb209929dd4ff1adc8e3de
+|-- |-- |-- |   4b4e34557046a278bb629c830b247a2173ed23
+|-- |-- |-- |   a2eac7fe78f215e0d90cd59ad417fe8572bc43
+|-- |-- |-- |   c7505b94767d876e71087806a0aefa7f34304b
+|-- |-- |   aa
+|-- |-- |-- |   378edc23bc9e3f550ef09a8dbfd6449cbcb660
+|-- |-- |-- |   623c982ee188efaca974fb0fc134e7821a2b2b
+|-- |-- |-- |   96653ca58017066fc9e1e17ecb9e404228b478
+|-- |-- |   ab
+|-- |-- |-- |   8b8996963cc966e47a00aa8e28d40ccbbbf2b8
+|-- |-- |   ad
+|-- |-- |-- |   34e57385decf03a91a660eda752ea4f30d00a3
+|-- |-- |-- |   7d99bb84a8754f4e467eef2fbe2d98c1580a5c
+|-- |-- |-- |   989780e8805b5f6e0bba226b48e85ebfaa3900
+|-- |-- |   ae
+|-- |-- |-- |   a616962480d7848dab4e5f9001d720d7c2e231
+|-- |-- |   af
+|-- |-- |-- |   0766aa60febb27cc5a7e72884f0420605a69bc
+|-- |-- |-- |   304b5a15ca9684abe25d934c962626d41aa5dd
+|-- |-- |-- |   d58f086e34f688af042aca8d698cccc39cfa8d
+|-- |-- |-- |   ed2cc5303720ba123899ed66b057a864de6f29
+|-- |-- |   b0
+|-- |-- |-- |   3bbd55d89ae7f0c42c673d112c883d506b5943
+|-- |-- |-- |   4c3f3aa5b50044e8fe7c16f1f26b7b0b112cc8
+|-- |-- |-- |   811ca3c9ac4df2492916e4e34e6b62252c4a41
+|-- |-- |-- |   818998405bf42c7116143bc897c8c56f9e2c22
+|-- |-- |   b1
+|-- |-- |-- |   a985e38b29c60d6dc08147a498713ea71aa3ab
+|-- |-- |-- |   b40c280cb4b662d4f1de6e3e5aa3bc65447eca
+|-- |-- |   b2
+|-- |-- |-- |   634a064569feae15aaf412dbbb4666975fdf93
+|-- |-- |-- |   d6464377be969c4361613e39b2147d42e2eafa
+|-- |-- |   b3
+|-- |-- |-- |   f5c0b80fba1fce1b1ce22b13150115be8c0a45
+|-- |-- |   b4
+|-- |-- |-- |   c8dbd0c50cf97216df255899bfe08132c93417
+|-- |-- |   b7
+|-- |-- |-- |   a299b27d1c36072db340603f872098d9f255bd
+|-- |-- |   b8
+|-- |-- |-- |   5e2f36f4eb5cc21b77e138360a2eb37c705a00
+|-- |-- |-- |   aec5e8b5cf348aa9e7fac73a0e1788e794d1b8
+|-- |-- |-- |   f805368ca79dce961769e64d504fec393be46b
+|-- |-- |   ba
+|-- |-- |-- |   973f7baab6bfcf790f080f620b2c02ca806f34
+|-- |-- |-- |   ca02972cd52610f8c5496db686f8bec9eec2ec
+|-- |-- |-- |   e4e1b5970df6e0838c3cbe568e5e99f3700fa5
+|-- |-- |   bc
+|-- |-- |-- |   b504a83ee348e12cb8c45a1501dc17d08b547e
+|-- |-- |   bd
+|-- |-- |-- |   3625c5016dbed35a1859944bd9ba31b2f33f46
+|-- |-- |   be
+|-- |-- |-- |   1e26aa2ddf36b07e561323cc4f9afd2e990c60
+|-- |-- |   bf
+|-- |-- |-- |   1b263af31b9fdd636e7c8eab7c526f9294ab04
+|-- |-- |   c0
+|-- |-- |-- |   b3c59c7f9d9d96df9da3da88ed75875a54f06f
+|-- |-- |   c1
+|-- |-- |-- |   26c1349a74fdb92f5b5bcefbcbc9a57d495cf4
+|-- |-- |-- |   3e3bf81283709f446e2476281976a662422c08
+|-- |-- |   c2
+|-- |-- |-- |   a2b2071f07fbca10f2e0fd1229f89e2ed8a988
+|-- |-- |   c3
+|-- |-- |-- |   863041baa97035d7b019e2e658c196e212904a
+|-- |-- |   c5
+|-- |-- |-- |   523845268f5cd91fbe31b279e033d7beb64177
+|-- |-- |   c6
+|-- |-- |-- |   60974c9f4fc2b08f68b90c6a0a1304e69b9e26
+|-- |-- |   c7
+|-- |-- |-- |   26a3dc5dbe5eb979de8b70dcfb6fde6c2186cc
+|-- |-- |-- |   8f92dc3d97dc9ac4870b116d0e02de59a235ae
+|-- |-- |-- |   ff4468c2abf504835a477c3fbb2edd54888c55
+|-- |-- |   c8
+|-- |-- |-- |   24b08e62085b1dda3e8e66ae6937c1ce702187
+|-- |-- |-- |   d2a02d7113aafc5289815e4a4429eb9a701c0b
+|-- |-- |-- |   dfe037c4c85a5b8ba64821ef1ea709ba1435fe
+|-- |-- |-- |   eac3712c302e977ac266bbc96ee6408ebfee06
+|-- |-- |   c9
+|-- |-- |-- |   2fb11fa7c6c17de9b5c08059492d37e073af49
+|-- |-- |-- |   d6de58d163616cb5e4ef46df6a4588a6924938
+|-- |-- |   ca
+|-- |-- |-- |   51793653c890215b88733e0fb778dd24d3e059
+|-- |-- |-- |   e17a838866d0394d76a7b2b8c6d8262fc602d3
+|-- |-- |   cc
+|-- |-- |-- |   adb2aaba0094234b394b3f398e8d54993e6025
+|-- |-- |-- |   dcedc653dae1199ffff0fdeabbe6df86828932
+|-- |-- |   cd
+|-- |-- |-- |   3efe6515eeef09cf903adcd8aaebe0a10632cc
+|-- |-- |-- |   e24fd0512e58fb81ebbfddd770a54bcd5c6985
+|-- |-- |   cf
+|-- |-- |-- |   069bdbb7e184c22f14794c076f57931f7da1ae
+|-- |-- |-- |   4a250b9902db952551c413015cc8eb1a9d538d
+|-- |-- |-- |   684d0833f104d65976ca99e326d95169589c3e
+|-- |-- |-- |   ec84126f517b0261f73e8a25a81d4b42ba2158
+|-- |-- |   d0
+|-- |-- |-- |   555442ba807a4ec382bc781374e9325fec8d1d
+|-- |-- |-- |   97a53ab31f4900e70b215d0379ecd5b209e021
+|-- |-- |-- |   b87eab033002bf88aafdbeda84c7806e8cbb7e
+|-- |-- |   d2
+|-- |-- |-- |   38cebff9db5a950c762c39b28ad813aaf7271b
+|-- |-- |-- |   392b1707813ee6dadee213c317cb073a7f7de9
+|-- |-- |   d3
+|-- |-- |-- |   47a4af979d7c4993671c9c82b9c509805daf81
+|-- |-- |-- |   79ab398e2e62856088b9b22f3a805c9032400c
+|-- |-- |-- |   a6ff90916c534768f109755620c0a77fae8e5a
+|-- |-- |-- |   e92b60e27e720fcb12eac18c80ca304ba80d1e
+|-- |-- |   d5
+|-- |-- |-- |   8dd00fcbf9f94b343339571f6e5fc546f98b60
+|-- |-- |   d7
+|-- |-- |-- |   3bfc4e8a728dee1da944b0c93c632026330e13
+|-- |-- |   d8
+|-- |-- |-- |   5dc9a276f6dc8e8d1a47d9760b79ffa609896d
+|-- |-- |   d9
+|-- |-- |-- |   0646657de3f867663dd7f11e80b3524e3d3539
+|-- |-- |   da
+|-- |-- |-- |   1a1bc5ebb7706c78573ab21348a35b45e0c45b
+|-- |-- |-- |   6af5ce64bf412869833e62883cb3f2ebdc9611
+|-- |-- |-- |   80a0f5b205318286f431953816cf1acd06cca9
+|-- |-- |   db
+|-- |-- |-- |   1cb5355215ba31e5ca039bec3862c93226204b
+|-- |-- |-- |   3d04119978ae6a904f0ef687aae7c991370f63
+|-- |-- |-- |   5980d14f6afe4f24ed33901289a2aebb3173d0
+|-- |-- |-- |   cfa1c997c0e74bc92a790d57135eaa993a319a
+|-- |-- |-- |   fc2e2f7d1d6d7561164e169a24ddc1e8097ed4
+|-- |-- |   dc
+|-- |-- |-- |   4de54969a6ddef9dee1e7c86f79efce010f9d0
+|-- |-- |   de
+|-- |-- |-- |   6a39445510cae0dd6e607b5a7a80731cbe4505
+|-- |-- |-- |   8c94066456d150b2e87f2d5c0f37848555337a
+|-- |-- |-- |   a2e87b00b77e98f39ace97bf0e73d2d201180a
+|-- |-- |   e1
+|-- |-- |-- |   b3bac9b854fb3c28b40639fc2170005d1c4fef
+|-- |-- |   e2
+|-- |-- |-- |   9bb45c6c885a5a1f3f6c4fdfb23ba43356efd9
+|-- |-- |   e3
+|-- |-- |-- |   42d249fbf8dfab7e31167fc512b73da00639fa
+|-- |-- |-- |   90dfbfac89c0a4e4432280e63de834457c3193
+|-- |-- |   e4
+|-- |-- |-- |   0c658b2910b520f0ad487d63e4dea852d0b2ed
+|-- |-- |-- |   457dafc7b7a4c65af72b1f75f0b032a189c0c0
+|-- |-- |-- |   c539e94dc176527a085bbf2b2f3a94b2c52e29
+|-- |-- |   e6
+|-- |-- |-- |   15b8def5e1418582f0d1ab039540ce2e085acd
+|-- |-- |-- |   480cc9d6f27e875d23a624763f71352b539946
+|-- |-- |-- |   a32815e20ccd15319c81b14bd8f8b868ced847
+|-- |-- |   e8
+|-- |-- |-- |   196843c393e971dee65106efe6b0b35f2ebba8
+|-- |-- |-- |   e3d4df46d635ad9b01ac79d1a2ffcfc46ebc83
+|-- |-- |   e9
+|-- |-- |-- |   9a245874ece8f4e6f8b2a5c7056d65ab7aaa37
+|-- |-- |-- |   a3675fb49f324da6912dc8f10372dab68a55dc
+|-- |-- |   ea
+|-- |-- |-- |   0f436e80c2af7320fbefd2c7745b8f0c84e7be
+|-- |-- |-- |   849c3d9d8252c75c0fcd9af26adcdeb7c55ad2
+|-- |-- |   eb
+|-- |-- |-- |   0b10e1101a48c346be21c8ba40c30aac6a56a0
+|-- |-- |-- |   4728c705a7470a42dc5592c765d5c448a5b8d0
+|-- |-- |   ec
+|-- |-- |-- |   c4611b68239e1d2cee5af275708d355c5147fb
+|-- |-- |   ee
+|-- |-- |-- |   4704f77a772d0a77eb3e0299c82c69c61646df
+|-- |-- |   ef
+|-- |-- |-- |   a2472b6e2c7aed9bbce86dafc27e9e3cb590ee
+|-- |-- |   f0
+|-- |-- |-- |   1985164ae40e6100544ff922afcf584e5892d2
+|-- |-- |-- |   33b17494a7dcd50c0aa2edb386a69eea90281b
+|-- |-- |-- |   c25b3cd5cbdb4ed3e8e9a80dd122740def9a6c
+|-- |-- |   f1
+|-- |-- |-- |   13f992d36f361f035ab957db79dfa44f2e0c38
+|-- |-- |-- |   deadf3c6a8fab9c55ce091b295782f196b5bd3
+|-- |-- |-- |   eaac868a2d35dc91cc6ea86e26c8fc99cd2ac0
+|-- |-- |   f2
+|-- |-- |-- |   455828f55805a677b9300eeaa046128b6e0173
+|-- |-- |   f4
+|-- |-- |-- |   2eec9ad99a1ed9fdc695b8126477db244e59b1
+|-- |-- |   f5
+|-- |-- |-- |   41d69d252c7eff2ac39a9f6403022a63dbc48a
+|-- |-- |-- |   69117cca62a66469fa74700a172f8ae0432d05
+|-- |-- |-- |   712c330e8e0ccc79b08b102dcece57f95881be
+|-- |-- |   f6
+|-- |-- |-- |   0a8453f53bb0a8616de3f858ba70926b440b8b
+|-- |-- |   f7
+|-- |-- |-- |   7002b292c7d7b148fd68a169df14bcbc35ba33
+|-- |-- |   f9
+|-- |-- |-- |   764bcf7361819c948d5a56679cd4c55d072237
+|-- |-- |   fa
+|-- |-- |-- |   05b67d43edd29d3dd736d2551409cbc791ab8f
+|-- |-- |-- |   d638f562d0a5911e61f16d497e1976ab08f283
+|-- |-- |-- |   df77027cdccec017689fdf349033034371718e
+|-- |-- |   fb
+|-- |-- |-- |   7dd7184256281e37f5c76835b4dd24a10cf7cf
+|-- |-- |   fc
+|-- |-- |-- |   cf733c78bb91be5f0d7df797d29186bd644e39
+|-- |-- |   fd
+|-- |-- |-- |   2ec767504a83000b6a553139f064feb107908c
+|-- |-- |-- |   47ab6c6c6abf558b1bd13306862a0e0f87e8f8
+|-- |-- |-- |   c0a0810f5ad38139fb96bb7555e144baeac818
+|-- |-- |-- |   c5c50af145c488484cbb682761f252e5217542
+|-- |-- |   fe
+|-- |-- |-- |   34d63b85409a14c017312a39f487c9810e08ab
+|-- |-- |-- |   3af2ca834702f1d1afb7319e475083fd983ce0
+|-- |-- |-- |   8edffc2ad31290ec8d4d6a692e4ae0e00bf6a1
+|-- |-- |   info
+|-- |-- |   pack
+|-- |-- |-- |   pack-08955f4e417334b7b54104aa8a567c3f50d87e8a.idx
+|-- |-- |-- |   pack-08955f4e417334b7b54104aa8a567c3f50d87e8a.pack
+|-- |-- |-- |   pack-08955f4e417334b7b54104aa8a567c3f50d87e8a.rev
+|-- |   packed-refs
+|-- |   refs
+|-- |-- |   heads
+|-- |-- |-- |   main
+|-- |-- |   remotes
+|-- |-- |-- |   origin
+|-- |-- |-- |-- |   HEAD
+|-- |-- |-- |-- |   main
+|-- |-- |   tags
+|   .gitignore
+|   api-gateway
+|-- |   .env
+|-- |   Dockerfile
+|-- |   package-lock.json
+|-- |   package.json
+|-- |   src
+|-- |-- |   index.js
+|-- |-- |   metrics.js
+|-- |-- |   routes
+|-- |-- |-- |   billing.js
+|-- |-- |-- |   dashboard.js
+|-- |-- |-- |   files.js
+|-- |-- |-- |   internal.js
+|-- |-- |-- |   tenants.js
+|-- |-- |-- |   users.js
+|-- |-- |   server.js
+|-- |-- |   tracing.js
+|   billing-service
+|-- |   .env
+|-- |   Dockerfile
+|-- |   package-lock.json
+|-- |   package.json
+|-- |   src
+|-- |-- |   billing.js
+|-- |-- |   index.js
+|-- |-- |   routes.js
+|-- |-- |   stripeClient.js
+|-- |-- |   tracing.js
+|-- |-- |   usageMeter.js
+|   buildspec.yml
+|   context.md
+|   docker-compose.yml
+|   file-service
+|-- |   .env
+|-- |   Dockerfile
+|-- |   package-lock.json
+|-- |   package.json
+|-- |   src
+|-- |-- |   index.js
+|-- |-- |   routes.js
+|-- |-- |   storage.js
+|-- |-- |   tracing.js
+|-- |-- |   upload.js
+|   file_structure.txt
+|   infrastructure
+|-- |   .terraform
+|-- |-- |   modules
+|-- |-- |-- |   modules.json
+|-- |-- |   providers
+|-- |-- |-- |   registry.terraform.io
+|-- |-- |-- |-- |   hashicorp
+|-- |-- |-- |-- |-- |   aws
+|-- |-- |-- |-- |-- |-- |   5.100.0
+|-- |-- |-- |-- |-- |-- |-- |   windows_386
+|-- |-- |-- |-- |-- |-- |-- |-- |   LICENSE.txt
+|-- |-- |-- |-- |-- |-- |-- |-- |   terraform-provider-aws_v5.100.0_x5.exe
+|-- |-- |-- |-- |-- |   random
+|-- |-- |-- |-- |-- |-- |   3.8.1
+|-- |-- |-- |-- |-- |-- |-- |   windows_386
+|-- |-- |-- |-- |-- |-- |-- |-- |   LICENSE.txt
+|-- |-- |-- |-- |-- |-- |-- |-- |   terraform-provider-random_v3.8.1_x5.exe
+|-- |-- |   terraform.tfstate
+|-- |   .terraform.lock.hcl
+|-- |   bootstrap
+|-- |-- |   .terraform
+|-- |-- |-- |   providers
+|-- |-- |-- |-- |   registry.terraform.io
+|-- |-- |-- |-- |-- |   hashicorp
+|-- |-- |-- |-- |-- |-- |   aws
+|-- |-- |-- |-- |-- |-- |-- |   6.39.0
+|-- |-- |-- |-- |-- |-- |-- |-- |   windows_386
+|-- |-- |-- |-- |-- |-- |-- |-- |-- |   LICENSE.txt
+|-- |-- |-- |-- |-- |-- |-- |-- |-- |   terraform-provider-aws_v6.39.0_x5.exe
+|-- |-- |-- |-- |-- |-- |   random
+|-- |-- |-- |-- |-- |-- |-- |   3.8.1
+|-- |-- |-- |-- |-- |-- |-- |-- |   windows_386
+|-- |-- |-- |-- |-- |-- |-- |-- |-- |   LICENSE.txt
+|-- |-- |-- |-- |-- |-- |-- |-- |-- |   terraform-provider-random_v3.8.1_x5.exe
+|-- |-- |   .terraform.lock.hcl
+|-- |-- |   main.tf
+|-- |-- |   terraform.tfstate
+|-- |-- |   terraform.tfstate.backup
+|-- |-- |   terraform.tfvars
+|-- |   infra.md
+|-- |   main.tf
+|-- |   modules
+|-- |-- |   cicd
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   ecr
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   ecs
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   iam
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   network
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   postgres
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |-- |   secrets
+|-- |-- |-- |   main.tf
+|-- |-- |-- |   outputs.tf
+|-- |-- |-- |   variables.tf
+|-- |   outputs.tf
+|-- |   providers.tf
+|-- |   terraform.tfvars
+|-- |   variables.tf
+|   init-db.sql
+|   load-tests
+|-- |   baseline.js
+|-- |   basic.js
+|-- |   chaos.js
+|-- |   mixed.js
+|-- |   smokeload.js
+|-- |   spike.js
+|   monitoring
+|-- |   nginx.conf
+|-- |   prometheus.yml
+|   package-lock.json
+|   package.json
+|   README.md
+|   scripts
+|-- |   detect-changes.sh
+|-- |   force-migration.js
+|-- |   generate-env.sh
+|-- |   push-to-ecr.sh
+|-- |   test-all.sh
+|   shared
+|-- |   config
+|-- |-- |   loadSecrets.js
+|-- |   db
+|-- |-- |   init-db.sql
+|-- |-- |   init.js
+|-- |   index.js
+|-- |   middleware
+|-- |-- |   authMiddleware.js
+|-- |-- |   idempotencyMiddleware.js
+|-- |-- |   index.js
+|-- |-- |   onboardingGuard.js
+|-- |-- |   rbacMiddleware.js
+|-- |-- |   requestLogger.js
+|-- |-- |   serviceAuthMiddleware.js
+|-- |-- |   tenantMiddleware.js
+|-- |-- |   usageMiddleware.js
+|-- |   package-lock.json
+|-- |   package.json
+|-- |   utils
+|-- |-- |   circuitBreaker.js
+|-- |-- |   circuitRegistry.js
+|-- |-- |   db.js
+|-- |-- |   index.js
+|-- |-- |   logger.js
+|-- |-- |   minio.js
+|-- |-- |   redis.js
+|-- |-- |   redisRateLimiter.js
+|-- |-- |   response.js
+|-- |-- |   retry.js
+|-- |-- |   s3.js
+|-- |-- |   serviceClient.js
+|-- |-- |   streamProxy.js
+|   tenant-service
+|-- |   .env
+|-- |   Dockerfile
+|-- |   package-lock.json
+|-- |   package.json
+|-- |   src
+|-- |-- |   index.js
+|-- |-- |   onboarding.js
+|-- |-- |   repository.js
+|-- |-- |   routes.js
+|-- |-- |   service.js
+|-- |-- |   tracing.js
+|   tests
+|-- |   fixtures
+|-- |-- |   onboarding-sample.json
+|   tests.md
+|   user-service
+|-- |   .env
+|-- |   Dockerfile
+|-- |   package-lock.json
+|-- |   package.json
+|-- |   src
+|-- |-- |   index.js
+|-- |-- |   repository.js
+|-- |-- |   routes.js
+|-- |-- |   server.js
+|-- |-- |   service.js
+|-- |-- |   tracing.js
+|   worker-service
+|-- |   .env
+|-- |   Dockerfile
+|-- |   package-lock.json
+|-- |   package.json
+|-- |   src
+|-- |-- |   index.js
+|-- |-- |   jobs
+|-- |-- |-- |   aggregateUsage.js
+|-- |-- |-- |   generateInvoices.js
+|-- |-- |-- |   processUsage.js
+|-- |-- |   tracing.js

@@ -5,7 +5,7 @@ const { pool } = require("../utils/db");
 async function runMigrationsIfNeeded() {
   if (process.env.RUN_DB_MIGRATIONS !== "true") return;
 
-  const migrationId = "init-v2";
+  const migrationId = "init-v3";
 
   // Ensure lock table exists before checking
   await pool.query(`
