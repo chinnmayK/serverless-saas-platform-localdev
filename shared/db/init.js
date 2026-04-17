@@ -37,7 +37,7 @@ async function runMigrationsIfNeeded() {
       return;
     }
 
-    console.log(`🚀 Running migration ${migrationId} (Statement-by-Statement)...`);
+    console.log(`🚀 Running migration ${migrationId}...`);
 
     // In our case, the file is in the root of the workspace.
     // If this runs in api-gateway, init-db.sql should be copied there or reachable.
@@ -56,34 +56,8 @@ async function runMigrationsIfNeeded() {
         }
     }
 
-    // 3. Split SQL into individual statements
-    // This is a naive split by semicolon followed by newline, but usually enough for init-db.sql
-    const statements = sql
-      .split(/;\s*$/m)
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
-
-    console.log(`📊 Found ${statements.length} SQL statements to execute.`);
-
-    for (let i = 0; i < statements.length; i++) {
-      const stmt = statements[i];
-      try {
-        await migrationClient.query(stmt);
-      } catch (err) {
-        // Log error but continue if it's a "safe" failure (like role already exists)
-        if (err.code === '42710' || err.code === '42701') { 
-          // 42710: duplicate_object (role), 42701: duplicate_column
-          console.log(`  ℹ️ Skipping statement ${i+1}: ${err.message}`);
-        } else {
-          console.error(`  ❌ Error in statement ${i+1}:`, {
-            message: err.message,
-            sql: stmt.substring(0, 100) + "..."
-          });
-          // Rethrow for critical failures to stop deployment
-          throw err;
-        }
-      }
-    }
+    // 3. Execute the SQL script (bulk execution is safe for idempotent scripts)
+    await migrationClient.query(sql);
 
     // 4. Record success
     await migrationClient.query(

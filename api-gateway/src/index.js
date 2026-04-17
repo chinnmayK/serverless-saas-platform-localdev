@@ -11,11 +11,12 @@ const PORT = process.env.PORT || 3000;
 
 (async () => {
   try {
-    await connectWithRetry({ delayMs: 5000 });
-    
-    // 🔥 run DB setup
+    // 🔥 1. run DB setup first (uses dbadmin pool)
     await runMigrationsIfNeeded();
 
+    // ✅ 2. Now verify the application-level connection (uses app_user)
+    await connectWithRetry({ delayMs: 5000 });
+    
     app.listen(PORT, () => {
       logger.info('api-gateway.started', { pid: process.pid, port: PORT });
       console.log(`🚀 Service running on port ${PORT}`);
