@@ -1,7 +1,7 @@
 const { Pool } = require("pg");
 const fs = require("fs");
 const path = require("path");
-const logger = require("@saas/shared/utils/logger");
+const logger = require("../utils/logger");
 
 async function runMigrationsIfNeeded() {
   if (process.env.RUN_DB_MIGRATIONS !== "true") return;
@@ -18,11 +18,14 @@ async function runMigrationsIfNeeded() {
     const dbHost = process.env.DB_HOST || "localhost";
     const dbName = process.env.DB_NAME || "saas_db";
 
+    const isRDS = !!(adminUrl && adminUrl.includes("amazonaws.com")) || !!(dbHost && dbHost.includes("amazonaws.com"));
+    const sslConfig = isRDS ? { rejectUnauthorized: false } : false;
+
     if (adminUrl) {
       logger.info("db.migration.using_admin_url", { migrationId });
       adminPool = new Pool({ 
         connectionString: adminUrl,
-        ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+        ssl: sslConfig
       });
     } else if (masterPassword) {
       // Emergency Fallback: If DB_ADMIN_URL is missing, try master user 'dbadmin' or 'app_user' with the master password.
@@ -32,7 +35,7 @@ async function runMigrationsIfNeeded() {
         database: dbName,
         user: "dbadmin", // Try the new master username first
         password: masterPassword,
-        ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+        ssl: sslConfig
       });
     } else {
       logger.error("db.migration.no_admin_credentials_available", { migrationId });

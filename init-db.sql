@@ -49,6 +49,9 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app_user') THEN
         CREATE USER app_user WITH PASSWORD 'app_password';
         RAISE NOTICE 'Created role app_user';
+    ELSE
+        ALTER USER app_user WITH PASSWORD 'app_password';
+        RAISE NOTICE 'Updated password for existing role app_user';
     END IF;
 END
 $$;
@@ -59,6 +62,9 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'auth_user') THEN
         CREATE USER auth_user WITH PASSWORD 'auth_password' BYPASSRLS;
         RAISE NOTICE 'Created role auth_user';
+    ELSE
+        ALTER USER auth_user WITH PASSWORD 'auth_password';
+        RAISE NOTICE 'Updated password for existing role auth_user';
     END IF;
 END
 $$;
