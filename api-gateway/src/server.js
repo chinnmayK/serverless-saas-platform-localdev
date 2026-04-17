@@ -16,6 +16,9 @@ const tenantRoutes = require('./routes/tenants');
 const dashboardRoutes = require('./routes/dashboard');
 const { client, httpRequestDuration, httpRequestTotal, requestSuccessTotal, tenantRequestsTotal } = require('./metrics');
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Timing middleware — place BEFORE your routes
 app.use((req, res, next) => {
   logger.info('incoming.request', { method: req.method, url: req.url });

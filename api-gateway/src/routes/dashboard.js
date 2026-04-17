@@ -4,9 +4,9 @@ const { streamProxy } = require('@saas/shared/utils/streamProxy');
 
 // 🔥 SERVICE URLs
 const SERVICES = {
-  billing: 'http://saas_billing_service:3003',
-  file: 'http://saas_file_service:3004',
-  tenant: 'http://saas_tenant_service:3001',
+  billing: process.env.BILLING_SERVICE_URL || 'http://billing-service.internal.saas-platform:3000',
+  file:    process.env.FILE_SERVICE_URL    || 'http://file-service.internal.saas-platform:3000',
+  tenant:  process.env.TENANT_SERVICE_URL  || 'http://tenant-service.internal.saas-platform:3000',
 };
 
 // 🔥 DASHBOARD PROXY HANDLER (STREAMING)

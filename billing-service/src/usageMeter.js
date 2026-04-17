@@ -20,20 +20,20 @@ async function recordUsage({ tenantId, userId, apiName, method }) {
 async function getUsageSummary(tenantId, from, to) {
   const result = await db.tenantQuery(
     tenantId,
-    `SELECT
-       endpoint,
-       method,
-       COUNT(*) AS call_count,
-       MIN(timestamp) AS first_call,
-       MAX(timestamp) AS last_call
-     FROM usage_logs
-     WHERE timestamp BETWEEN $1 AND $2
-     GROUP BY endpoint, method
-     ORDER BY call_count DESC`,
+    `SELECT 
+       endpoint, 
+       method, 
+       COUNT(*) AS "callCount", 
+       MIN(timestamp) AS "firstCall", 
+       MAX(timestamp) AS "lastCall"
+     FROM usage_logs 
+     WHERE timestamp BETWEEN $1 AND $2 
+     GROUP BY endpoint, method 
+     ORDER BY "callCount" DESC`,
     [from, to]
   );
 
-  const total = result.rows.reduce((sum, r) => sum + parseInt(r.call_count, 10), 0);
+  const total = result.rows.reduce((sum, r) => sum + parseInt(r.callCount, 10), 0);
 
   return { tenantId, from, to, total, breakdown: result.rows };
 }

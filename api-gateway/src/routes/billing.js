@@ -6,7 +6,7 @@ const { serviceClient } = require('@saas/shared/utils');
 const { authMiddleware } = require('@saas/shared/middleware');
 const router = express.Router();
 
-const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL || 'http://billing-service:3003';
+const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL || 'http://billing-service.internal.saas-platform:3000';
 const billingBreaker = getBreaker('billing-service', { threshold: 3, timeout: 15000 });
 
 // Custom usage summary route
@@ -50,9 +50,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 router.use(
   '/',
   createProxyMiddleware({
-    target: process.env.BILLING_SERVICE_URL || 'http://billing-service:3003',
+    target: BILLING_SERVICE_URL,
     changeOrigin: true,
-    pathRewrite: (path) => '/billing' + path,
     on: { error: (err, req, res) => res.status(502).json({ error: 'Billing service unavailable' }) },
   })
 );
