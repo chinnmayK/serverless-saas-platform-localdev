@@ -1,5 +1,6 @@
 const repo = require("./repository");
 const logger = require("@saas/shared/utils/logger");
+const mapper = require("@saas/shared/utils/mapper");
 
 async function generateUniqueSlug(name) {
   const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -43,13 +44,14 @@ async function createTenant(data) {
 }
 
 async function listTenants() {
-  return repo.getAllTenants();
+  const tenants = await repo.getAllTenants();
+  return tenants.map(mapper.mapTenant);
 }
 
 async function getTenant(tenantId) {
   const tenant = await repo.getTenantById(tenantId);
   if (!tenant) throw new Error("Tenant not found");
-  return tenant;
+  return mapper.mapTenant(tenant);
 }
 
 async function upgradePlan(tenantId, plan) {
@@ -58,7 +60,6 @@ async function upgradePlan(tenantId, plan) {
     throw new Error(`Plan must be one of: ${validPlans.join(", ")}`);
   }
   
-  // Get current plan for audit logging
   const currentTenant = await repo.getTenantById(tenantId);
   if (!currentTenant) throw new Error("Tenant not found");
   const oldPlan = currentTenant.plan;
@@ -66,10 +67,8 @@ async function upgradePlan(tenantId, plan) {
   const tenant = await repo.updateTenantPlan(tenantId, plan);
   if (!tenant) throw new Error("Tenant not found");
   
-  // Audit log the plan change
   logger.audit("tenant.plan_changed", { tenantId, oldPlan, newPlan: plan });
-  
-  return tenant;
+  return mapper.mapTenant(tenant);
 }
 
 async function getFeatures(tenantId) {
@@ -79,7 +78,7 @@ async function getFeatures(tenantId) {
 async function removeTenant(tenantId) {
   const tenant = await repo.deleteTenant(tenantId);
   if (!tenant) throw new Error("Tenant not found");
-  return tenant;
+  return mapper.mapTenant(tenant);
 }
 
 module.exports = { createTenant, listTenants, getTenant, upgradePlan, getFeatures, removeTenant };

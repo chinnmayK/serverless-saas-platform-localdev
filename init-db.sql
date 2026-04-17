@@ -14,17 +14,28 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- This ensures smooth deployments where tables already exist with old structures.
 DO $$ 
 BEGIN 
+    -- 1. Tenants table
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='id') THEN
         ALTER TABLE tenants RENAME COLUMN id TO tenant_id;
+        RAISE NOTICE 'Renamed id to tenant_id on tenants table';
     END IF;
+
+    -- 2. Users table
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='id') THEN
         ALTER TABLE users RENAME COLUMN id TO user_id;
+        RAISE NOTICE 'Renamed id to user_id on users table';
     END IF;
+
+    -- 3. Files table
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='files' AND column_name='id') THEN
         ALTER TABLE files RENAME COLUMN id TO file_id;
+        RAISE NOTICE 'Renamed id to file_id on files table';
     END IF;
+
+    -- 4. Subscriptions table
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='subscriptions' AND column_name='id') THEN
         ALTER TABLE subscriptions RENAME COLUMN id TO subscription_id;
+        RAISE NOTICE 'Renamed id to subscription_id on subscriptions table';
     END IF;
 END $$;
 
@@ -35,8 +46,9 @@ END $$;
 -- Create application user (runs with RLS enforced)
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = 'app_user') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app_user') THEN
         CREATE USER app_user WITH PASSWORD 'app_password';
+        RAISE NOTICE 'Created role app_user';
     END IF;
 END
 $$;
@@ -44,8 +56,9 @@ $$;
 -- Create auth user (bypasses RLS for credential lookup only)
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = 'auth_user') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'auth_user') THEN
         CREATE USER auth_user WITH PASSWORD 'auth_password' BYPASSRLS;
+        RAISE NOTICE 'Created role auth_user';
     END IF;
 END
 $$;

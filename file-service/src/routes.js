@@ -16,6 +16,8 @@ const billingBreaker = getServiceBreaker("billing-service", BILLING_SERVICE_URL)
 // All file routes are protected
 router.use(auth, tenantCtx);
 
+const mapper = require("@saas/shared/utils/mapper");
+
 // POST /files/upload — upload a file (tenant-scoped)
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
@@ -39,16 +41,18 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       [tenantId, userId, req.file.originalname, key, req.file.mimetype, req.file.size]
     );
 
+    const file = mapper.mapFile(result.rows[0]);
+
     // Audit log file upload
     logger.info("file.uploaded", {
       tenantId: req.tenantId,
       userId: req.userId,
-      fileId: result.rows[0].file_id,
-      fileName: req.file.originalname,
-      sizeBytes: req.file.size,
+      fileId: file.fileId,
+      fileName: file.originalName,
+      sizeBytes: file.sizeBytes,
     });
 
-    return response.created(res, result.rows[0]);
+    return response.created(res, file);
   } catch (err) {
     return response.error(res, err.message);
   }
@@ -59,13 +63,12 @@ router.get("/", async (req, res) => {
   try {
     const result = await db.tenantQuery(
       req.tenantId,
-      `SELECT file_id, original_name, mime_type, size_bytes, created_at, user_id
-       FROM files
+      `SELECT * FROM files
        WHERE deleted_at IS NULL
        ORDER BY created_at DESC`,
       []
     );
-    return response.success(res, result.rows);
+    return response.success(res, result.rows.map(mapper.mapFile));
   } catch (err) {
     return response.error(res, err.message);
   }
@@ -74,24 +77,27 @@ router.get("/", async (req, res) => {
 // GET /files/:id/download — get pre-signed download URL
 router.get("/:id/download", async (req, res) => {
   try {
-    // Ensure file belongs to caller's tenant and is not deleted
     const result = await db.tenantQuery(
       req.tenantId,
       `SELECT * FROM files WHERE file_id = $1 AND deleted_at IS NULL`,
       [req.params.id]
     );
-    const file = result.rows[0];
+    const file = mapper.mapFile(result.rows[0]);
     if (!file) return response.notFound(res, "File not found");
     
-    assertKeyBelongsToTenant(file.storage_key, req.tenantId);
-    const url = await storage.getDownloadUrl(file.storage_key);
+    // assertKeyBelongsToTenant logic uses storage_key — which is hidden in mapFile
+    // but the raw record had it. Need to keep raw file for internal logic.
+    const rawFile = result.rows[0];
+    assertKeyBelongsToTenant(rawFile.storage_key, req.tenantId);
+    
+    const url = await storage.getDownloadUrl(rawFile.storage_key);
     return response.success(res, { url, expiresIn: "1 hour", file });
   } catch (err) {
     return response.error(res, err.message);
   }
 });
 
-// DELETE /files/:id — delete a file (soft delete) - admin or member only
+// DELETE /files/:id — delete a file (soft delete)
 router.delete("/:id", auth, tenantCtx, requireRole("admin", "member"), async (req, res) => {
   try {
     const result = await db.tenantQuery(
@@ -99,15 +105,12 @@ router.delete("/:id", auth, tenantCtx, requireRole("admin", "member"), async (re
       `SELECT * FROM files WHERE file_id = $1 AND deleted_at IS NULL`,
       [req.params.id]
     );
-    const file = result.rows[0];
-    if (!file) return response.notFound(res, "File not found");
+    const rawFile = result.rows[0];
+    if (!rawFile) return response.notFound(res, "File not found");
 
-    assertKeyBelongsToTenant(file.storage_key, req.tenantId);
+    assertKeyBelongsToTenant(rawFile.storage_key, req.tenantId);
+    await storage.deleteFile(rawFile.storage_key);
 
-    // Remove from S3
-    await storage.deleteFile(file.storage_key);
-
-    // Soft delete metadata from DB
     await db.tenantQuery(
       req.tenantId,
       `UPDATE files SET deleted_at = NOW() WHERE file_id = $1`,
@@ -135,7 +138,7 @@ router.get("/dashboard/files", async (req, res) => {
       ),
       db.tenantQuery(
         tenantId,
-        `SELECT file_id, original_name, size_bytes, created_at 
+        `SELECT * 
          FROM files 
          WHERE tenant_id = $1 AND deleted_at IS NULL 
          ORDER BY created_at DESC 
@@ -145,9 +148,9 @@ router.get("/dashboard/files", async (req, res) => {
     ]);
 
     return response.success(res, {
-      total_files: parseInt(stats.rows[0].total_files, 10),
-      total_size: parseInt(stats.rows[0].total_size, 10),
-      recent_files: recent.rows,
+      totalFiles: parseInt(stats.rows[0].total_files, 10), // Use camelCase
+      totalSize: parseInt(stats.rows[0].total_size, 10),   // Use camelCase
+      recentFiles: recent.rows.map(mapper.mapFile),
     });
   } catch (err) {
     return response.error(res, err.message);

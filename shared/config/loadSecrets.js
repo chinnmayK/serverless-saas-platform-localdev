@@ -8,6 +8,7 @@ if (process.env.APP_SECRETS) {
   const s = JSON.parse(process.env.APP_SECRETS);
 
   process.env.DATABASE_URL           = s.DATABASE_URL;
+  process.env.DB_ADMIN_URL           = s.DB_ADMIN_URL;
   process.env.REDIS_URL              = s.REDIS_URL;
   process.env.JWT_SECRET             = s.JWT_SECRET;
   process.env.DB_PASSWORD            = s.DB_PASSWORD;

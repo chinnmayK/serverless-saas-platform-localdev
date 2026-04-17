@@ -64,11 +64,11 @@ async function onboard({ tenantName, adminEmail, adminPassword, adminName }) {
     );
 
     return {
-      tenant_id:   tenantId,
-      user_id:     userId,
+      tenantId:   tenantId,
+      userId:     userId,
       plan:        DEFAULT_PLAN,
       token,
-      onboarding_completed: true,
+      onboardingCompleted: true,
     };
   } catch (err) {
     await client.query('ROLLBACK');

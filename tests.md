@@ -21,7 +21,7 @@ Provisions a new tenant database schema, assigns the "free" plan, and creates an
 - **Method:** `POST`
 - **URL:** `{{baseUrl}}/api/onboarding`
 - **Auth:** No Auth
-- **Headers:** `Content-Type: application/json`, `Idempotency-Key: <uuid>` (optional)
+- **Headers:** `Content-Type: application/json`
 - **Body:**
 ```json
 {
@@ -31,7 +31,7 @@ Provisions a new tenant database schema, assigns the "free" plan, and creates an
   "adminName": "Admin User"
 }
 ```
-**Assertion:** Expect `201 Created`. Copy `tenant_id`, `user_id`, and `token` from the response to your Postman variables.
+**Assertion:** Expect `201 Created`. Copy `tenantId`, `userId`, and `token` from the response `data` object to your Postman variables.
 
 ### 2.2. User Login
 Logs in an existing user and returns a JWT token.
@@ -46,7 +46,7 @@ Logs in an existing user and returns a JWT token.
   "password": "Password123!"
 }
 ```
-**Assertion:** Expect `200 OK`. The response string/token should be saved to your `{{token}}` variable.
+**Assertion:** Expect `200 OK`. The `token` string in the response `data` should be saved to your `{{token}}` variable.
 
 ---
 
@@ -55,12 +55,12 @@ Logs in an existing user and returns a JWT token.
 ### 3.1. List Tenants
 - **Method:** `GET`
 - **URL:** `{{baseUrl}}/api/tenants`
-- **Expected:** `200 OK` (Array of tenants)
+- **Expected:** `200 OK` (Array of tenants in `data`)
 
 ### 3.2. Get Specific Tenant
 - **Method:** `GET`
 - **URL:** `{{baseUrl}}/api/tenants/{{tenantId}}`
-- **Expected:** `200 OK`
+- **Expected:** `200 OK` (Tenant object in `data`)
 
 ### 3.3. Update Tenant Plan (Admin Only)
 - **Method:** `PATCH`
@@ -72,16 +72,6 @@ Logs in an existing user and returns a JWT token.
 }
 ```
 - **Expected:** `200 OK`
-
-### 3.4. Get Tenant Feature Flags
-- **Method:** `GET`
-- **URL:** `{{baseUrl}}/api/tenants/{{tenantId}}/features`
-- **Expected:** `200 OK` (Array of features e.g. `file_upload`, `api_access`)
-
-### 3.5. Tenant Activity Dashboard
-- **Method:** `GET`
-- **URL:** `{{baseUrl}}/api/dashboard/activity`
-- **Expected:** `200 OK` (Returns recent usage logs/activity for the tenant)
 
 ---
 
@@ -101,7 +91,7 @@ Logs in an existing user and returns a JWT token.
   "isAdmin": false
 }
 ```
-- **Expected:** `201 Created`
+- **Expected:** `201 Created`. Copy `userId` from the `data` object.
 
 ### 4.2. List Users in Tenant
 - **Method:** `GET`
@@ -113,35 +103,26 @@ Logs in an existing user and returns a JWT token.
 - **URL:** `{{baseUrl}}/api/users/{{userId}}`
 - **Expected:** `200 OK`
 
-### 4.4. Delete User (Admin Only)
-- **Method:** `DELETE`
-- **URL:** `{{baseUrl}}/api/users/<new_user_id>`
-- **Expected:** `200 OK`
-
 ---
 
 ## 5. File Service Features
 
-> [!WARNING]
-> **Note on File Service Routing Limitations:** Currently, `GET /api/files` (List Files) and `DELETE /api/files/:id` (Delete File) are directly implemented in `file-service/src/routes.js` but the API Gateway (`api-gateway/src/routes/files.js`) does **not** map them. They will hit a `404` at the gateway. Only `/upload` and `/:fileId/download` are accessible through the Gateway.
-
 ### 5.1. Upload File
 - **Method:** `POST`
 - **URL:** `{{baseUrl}}/api/files/upload`
-- **Headers:** *(Remove manual Content-Type header in Postman, let it set multipart/form-data boundary automatically)*
 - **Body:** Select `form-data`.
   - Key: `file` (Type: **File**) -> Choose an image or text file.
-- **Expected:** `201 Created`. Copy `file_id` to your `{{fileId}}` variable.
+- **Expected:** `201 Created`. Copy `fileId` from the `data` object.
 
 ### 5.2. Get File Download URL
 - **Method:** `GET`
 - **URL:** `{{baseUrl}}/api/files/{{fileId}}/download`
-- **Expected:** `200 OK`. Returns a pre-signed S3 download URL.
+- **Expected:** `200 OK`. Returns a pre-signed S3 download URL in `data.url`.
 
 ### 5.3. Dashboard Files Summary
 - **Method:** `GET`
 - **URL:** `{{baseUrl}}/api/dashboard/files`
-- **Expected:** `200 OK` (Returns `total_files`, `total_size`, and `recent_files`).
+- **Expected:** `200 OK`. Returns `totalFiles`, `totalSize`, and `recentFiles` in `data`.
 
 ---
 
@@ -150,54 +131,34 @@ Logs in an existing user and returns a JWT token.
 ### 6.1. Get Usage Summary
 - **Method:** `GET`
 - **URL:** `{{baseUrl}}/api/billing/usage`
-- **Expected:** `200 OK` (Shows aggregate usage across endpoints).
+- **Expected:** `200 OK`
 
-### 6.2. Dashboard Usage
-- **Method:** `GET`
-- **URL:** `{{baseUrl}}/api/dashboard/usage`
-- **Expected:** `200 OK` (Dashboard visualization data for requests per endpoint and per hour).
-
-### 6.3. Dashboard Billing
+### 6.2. Dashboard Billing
 - **Method:** `GET`
 - **URL:** `{{baseUrl}}/api/dashboard/billing`
-- **Expected:** `200 OK` (Current plan, quota, items used, and remaining quota).
+- **Expected:** `200 OK` (Current plan, quota, items used in `data`).
 
-### 6.4. Generate Invoice
-- **Method:** `GET`
-- **URL:** `{{baseUrl}}/api/billing/invoice`
-- **Expected:** `200 OK` (Returns invoice details for the tenant).
-
-### 6.5. Get Subscription
-- **Method:** `GET`
-- **URL:** `{{baseUrl}}/api/billing/subscription`
-- **Expected:** `200 OK` or `404 Not Found` (if no Stripe subscription exists yet).
-
-### 6.6. Create Checkout Session
+### 6.3. Create Checkout Session
 - **Method:** `POST`
 - **URL:** `{{baseUrl}}/api/billing/create-checkout`
-- **Body:** `{}` *(Empty JSON)*
-- **Expected:** `200 OK`. Returns a Stripe checkout URL for the user to complete payment.
-
-### 6.7. Stripe Webhook (No Auth - internal service mock/Stripe)
-- **Method:** `POST`
-- **URL:** `{{baseUrl}}/api/billing/webhook`
-- **Headers:** `Content-Type: application/json`
-- **Body:** raw Stripe webhook payload.
-- **Expected:** `200 OK` (Depends on the payload correctness, typically tested via Stripe CLI or mocked data).
+- **Body:** `{}`
+- **Expected:** `200 OK`. Returns a Stripe checkout `url` in `data`.
 
 ---
 
 ## 7. Troubleshooting
 
 ### 500 Internal Server Error during Onboarding
-If you receive a 500 error when hitting `POST /api/onboarding` and your service logs indicate a column name issue (e.g. `column "tenant_id" of relation "tenants" does not exist`), this means your ECS database schema is out-of-sync with the current codebase expectation of `tenant_id`.
+If you receive a 500 error indicating `column "tenant_id" ... does not exist`, it means your DB schema uses legacy names.
 
-**The Fix:** 
-The platform is transitioning from generic `id` columns to `tenant_id` and `user_id` for clarity. To resolve this against an existing database, run the following SQL migration on your RDS instance:
-```sql
-ALTER TABLE tenants RENAME COLUMN id TO tenant_id;
-ALTER TABLE users RENAME COLUMN id TO user_id;
-ALTER TABLE files RENAME COLUMN id TO file_id;
-ALTER TABLE subscriptions RENAME COLUMN id TO subscription_id;
-```
-If your deployment pipeline doesn't automatically execute `init-db.sql` against existing databases, you will need to apply this schema migration manually using a tool like pgAdmin or `psql` connected to your AWS RDS database.
+**The Automated Fix (Preferred):**
+The platform's migration runner fixes this on startup.
+1.  **Redeploy API Gateway**: Ensure the latest code is pushed to ECS.
+2.  **Check Logs**: Look for `✅ DB Migration applied successfully`.
+3.  **Validate**: The runner will automatically rename `id` to `tenant_id` and ensure all entity IDs are correct.
+
+### Terraform State Lock Error
+If `terraform apply` fails with `Error acquiring the state lock`:
+1.  **Identify Lock ID**: Copy the ID from the error message.
+2.  **Unlock**: Run `terraform force-unlock <ID>` in the `infrastructure` directory.
+3.  **Resume**: Re-run `terraform apply`.

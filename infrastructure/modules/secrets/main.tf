@@ -23,7 +23,8 @@ resource "aws_secretsmanager_secret_version" "app_secrets_value" {
     JWT_SECRET             = random_password.jwt_secret.result
     REDIS_URL              = "redis://${var.redis_endpoint}:6379"
     DB_PASSWORD            = var.db_password
-    DATABASE_URL           = "postgresql://app_user:${var.db_password}@${var.db_endpoint}:5432/saas_db"
+    DB_ADMIN_URL           = "postgresql://dbadmin:${var.db_password}@${var.db_endpoint}:5432/saas_db"
+    DATABASE_URL           = "postgresql://app_user:app_password@${var.db_endpoint}:5432/saas_db"
     INTERNAL_SERVICE_TOKEN = var.internal_service_token
     FRONTEND_URL           = var.frontend_url
     STRIPE_SECRET_KEY      = var.stripe_secret_key

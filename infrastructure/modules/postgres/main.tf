@@ -54,7 +54,7 @@ resource "aws_db_instance" "main" {
   storage_encrypted = true
 
   db_name  = "saas_db"
-  username = "app_user"
+  username = "dbadmin"
   password = var.db_password
 
   vpc_security_group_ids = [aws_security_group.postgres_sg.id]
